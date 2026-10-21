@@ -120,6 +120,49 @@
             </div>
         </header>
 
+        <!-- FLIGHTAWARE SUPPLEMENTAL DATA (MANUAL LOOKUP) -->
+        <section class="cockpit-panel rounded-xl p-3 panel-glow-amber flex flex-col gap-2" aria-labelledby="faHeading">
+            <div class="flex items-center justify-between gap-2">
+                <div>
+                    <div id="faHeading" class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mono-font">FLIGHTAWARE · SUPPLEMENTAL</div>
+                    <div class="text-[10px] text-slate-500 mt-1">External tracking data only — verify all operational information with official dispatch sources.</div>
+                </div>
+                <button id="btnFetchFlightAware" type="button" onclick="fetchFlightAware()" class="shrink-0 px-3 py-2 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition">FETCH FLIGHT DATA</button>
+            </div>
+            <div id="faMessage" role="status" aria-live="polite" class="text-xs text-slate-400 mono-font">Tap Fetch Flight Data to request AAL flight information.</div>
+            <div id="faResults" class="hidden grid grid-cols-2 gap-2 text-xs mono-font">
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
+                    <div class="text-[9px] text-slate-500 uppercase">Flight / Status</div>
+                    <div id="faStatus" class="text-sm font-bold text-cyan-300 mt-1">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
+                    <div class="text-[9px] text-slate-500 uppercase">Aircraft</div>
+                    <div id="faAircraft" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
+                    <div class="text-[9px] text-slate-500 uppercase">Registration</div>
+                    <div id="faRegistration" class="text-slate-100 font-bold mt-1">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
+                    <div class="text-[9px] text-slate-500 uppercase">Origin</div>
+                    <div id="faOrigin" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
+                    <div class="text-[9px] text-slate-500 uppercase">Destination</div>
+                    <div id="faDestination" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
+                    <div class="text-[9px] text-slate-500 uppercase mb-1">Departure · scheduled / estimated / actual</div>
+                    <div id="faDepartureTimes" class="text-slate-100 break-words">—</div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
+                    <div class="text-[9px] text-slate-500 uppercase mb-1">Arrival · scheduled / estimated / actual</div>
+                    <div id="faArrivalTimes" class="text-slate-100 break-words">—</div>
+                </div>
+                <div id="faUpdated" class="col-span-2 text-[9px] text-slate-500">Times are shown as returned by FlightAware, including their timestamp offset where provided.</div>
+            </div>
+        </section>
+
         <!-- THREE-BOX FLIGHT DASHBOARD PANEL -->
         <section class="cockpit-panel rounded-xl p-3 panel-glow-cyan flex flex-col gap-2">
             
@@ -883,6 +926,99 @@
             }
             progressIds.forEach(id => document.getElementById(id).innerText = Math.floor(pct) + "%");
             bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+        }
+
+        const FLIGHTAWARE_WORKER_URL = "https://aa-kneeboard-flight-api.mattaxley.workers.dev";
+
+        function faTime(value) {
+            if (!value) return "—";
+            // Preserve the timestamp's own wall-clock value and offset instead of
+            // silently converting it to the device's time zone.
+            const match = String(value).match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?(Z|[+-]\d{2}:?\d{2})?$/);
+            if (!match) return String(value);
+            const offset = match[3] ? ` ${match[3] === "Z" ? "UTC" : match[3]}` : " (zone not provided)";
+            return `${match[1]} ${match[2]}${offset}`;
+        }
+
+        function faAirport(airport) {
+            if (!airport) return "—";
+            const code = airport.code || "—";
+            const name = airport.name && airport.name !== code ? ` · ${airport.name}` : "";
+            return `${code}${name}`;
+        }
+
+        async function fetchFlightAware() {
+            const button = document.getElementById("btnFetchFlightAware");
+            const message = document.getElementById("faMessage");
+            const results = document.getElementById("faResults");
+            const flightNumber = String(flight.callsign || "").replace(/\D/g, "");
+            const flightDate = flight.flightDate || localDateString(new Date());
+
+            if (!flightNumber) {
+                message.className = "text-xs text-rose-300 mono-font";
+                message.textContent = "Enter a flight number in SETUP before fetching data.";
+                results.classList.add("hidden");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "FETCHING…";
+            message.className = "text-xs text-slate-400 mono-font";
+            message.textContent = `Requesting AAL${flightNumber} for ${flightDate}…`;
+
+            try {
+                const endpoint = new URL(`${FLIGHTAWARE_WORKER_URL}/api/flight`);
+                endpoint.searchParams.set("flight", flightNumber);
+                endpoint.searchParams.set("date", flightDate);
+                const response = await fetch(endpoint.toString(), { method: "GET", cache: "no-store" });
+                let data;
+                try { data = await response.json(); }
+                catch { throw new Error(`Worker returned HTTP ${response.status} with an unreadable response.`); }
+
+                if (!response.ok || !data.ok) {
+                    const detail = data.error || `HTTP ${response.status}`;
+                    throw new Error(`${detail}${data.upstreamStatus ? ` (FlightAware status ${data.upstreamStatus})` : ""}`);
+                }
+
+                const matches = Array.isArray(data.flights) ? data.flights : [];
+                if (!matches.length) {
+                    results.classList.add("hidden");
+                    message.className = "text-xs text-amber-300 mono-font";
+                    message.textContent = `No FlightAware records returned for AAL${flightNumber} on ${flightDate}. Verify the flight/date and try again.`;
+                    return;
+                }
+
+                const normalizedRequested = `AAL${flightNumber}`.toUpperCase();
+                const exactMatches = matches.filter(f => String(f.ident || "").toUpperCase() === normalizedRequested);
+                // The Worker searches a broad UTC window. Prefer the record whose
+                // departure timestamp date matches the selected flight date so we
+                // do not accidentally show an adjacent day's operation.
+                const selected = exactMatches.find(f => String(f.scheduledOut || "").startsWith(flightDate));
+                if (!selected) {
+                    results.classList.add("hidden");
+                    message.className = "text-xs text-amber-300 mono-font";
+                    message.textContent = `FlightAware returned ${matches.length} record(s), but none matched AAL${flightNumber} with a scheduled departure date of ${flightDate}. Check the selected date before relying on this data.`;
+                    return;
+                }
+                document.getElementById("faStatus").textContent = `${selected.ident || normalizedRequested} · ${selected.status || "Status unavailable"}`;
+                document.getElementById("faAircraft").textContent = selected.aircraftType || "Not reported";
+                document.getElementById("faRegistration").textContent = selected.registration || "Not reported";
+                document.getElementById("faOrigin").textContent = faAirport(selected.origin);
+                document.getElementById("faDestination").textContent = faAirport(selected.destination);
+                document.getElementById("faDepartureTimes").textContent = `SCH ${faTime(selected.scheduledOut)} · EST ${faTime(selected.estimatedOut)} · ACT ${faTime(selected.actualOut)}`;
+                document.getElementById("faArrivalTimes").textContent = `SCH ${faTime(selected.scheduledIn)} · EST ${faTime(selected.estimatedIn)} · ACT ${faTime(selected.actualIn)}`;
+                document.getElementById("faUpdated").textContent = `Retrieved ${new Date().toLocaleString()} · ${matches.length} record(s) returned. Timestamps retain the offset provided by FlightAware.`;
+                results.classList.remove("hidden");
+                message.className = "text-xs text-emerald-300 mono-font";
+                message.textContent = `FlightAware lookup successful for ${data.requestedFlight || normalizedRequested}. This information is supplemental and has not changed your manual dispatch fields.`;
+            } catch (error) {
+                results.classList.add("hidden");
+                message.className = "text-xs text-rose-300 mono-font";
+                message.textContent = `Flight lookup failed: ${error.message || "Unknown error"}. Check connectivity and Worker configuration.`;
+            } finally {
+                button.disabled = false;
+                button.textContent = "FETCH FLIGHT DATA";
+            }
         }
 
         function toggleNightMode() {

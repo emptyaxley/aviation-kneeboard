@@ -435,10 +435,14 @@
                 <!-- Fuel & Config -->
                 <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
                     <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">6. Fuel Planning & Takeoff Config</div>
-                    <div class="grid grid-cols-4 gap-2">
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
                         <div>
                             <label class="text-slate-400 block mb-1 text-[10px]">Release Fuel</label>
                             <input type="number" inputmode="decimal" step="0.1" min="0" id="inpReleaseFuel" placeholder="18.5" onfocus="this.select()" oninput="calcPlanArrFuel()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Min to Fuel</label>
+                            <input type="number" inputmode="decimal" step="0.1" min="0" id="inpMinToFuel" placeholder="" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
                         </div>
                         <div>
                             <label class="text-slate-400 block mb-1 text-[10px]">Extra Fuel</label>
@@ -544,6 +548,7 @@
             expectedTurbulence: "NONE / LIGHT",
             expectedDelays: "ON TIME",
             releaseFuel: "18.5",
+            minToFuel: "",
             extraFuel: "4.5",
             plannedBurn: "10.4",
             planArrFuel: "12.6",
@@ -771,10 +776,9 @@
                         <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-3 py-1 rounded text-xs mt-1">📢 CALL FOR BEFORE START CHECKLIST</span>
                     </div>
                     <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs space-y-2">
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center font-mono">
+                        <div class="grid grid-cols-3 gap-1.5 text-center font-mono">
                             <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">TAIL #</div><div class="font-black text-cyan-400 text-xs">${flight.tail || '---'}</div></div>
-                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">FUEL</div><div class="font-black text-amber-400 text-xs">${flight.releaseFuel || '---'} K</div></div>
-                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">ALTIMETER</div><div class="font-black text-white text-xs">30.12</div></div>
+                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">RLS FUEL</div><div class="font-black text-amber-400 text-xs">${flight.releaseFuel || '---'} K</div></div>
                             <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">FLAPS</div><div class="font-black text-emerald-400 text-xs">${flight.flaps || '--'}</div></div>
                         </div>
                     </div>
@@ -802,7 +806,7 @@
                         <div class="grid grid-cols-3 gap-2 text-xs font-mono pt-1">
                             <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Flaps: <strong>${flight.flaps || '--'}</strong></div>
                             <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Thrust: <strong>${flight.thrust || 'TOGA'}</strong></div>
-                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Min T/O Fuel: <strong>${flight.releaseFuel || '--'} K</strong></div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Min T/O Fuel: <strong>${flight.minToFuel || '--'} K</strong></div>
                         </div>
                         <div class="text-[11px] text-cyan-300 font-bold pt-1">Approaching #1 for Departure: Check FMA, RWY, and FMS</div>
                     </div>
@@ -1104,6 +1108,7 @@
             setVal("inpTurbulence", flight.expectedTurbulence);
             setVal("inpDelays", flight.expectedDelays);
             setVal("inpReleaseFuel", flight.releaseFuel);
+            setVal("inpMinToFuel", flight.minToFuel);
             setVal("inpExtraFuel", flight.extraFuel);
             setVal("inpPlannedBurn", flight.plannedBurn);
             setVal("inpPlanArrFuel", flight.planArrFuel);
@@ -1146,6 +1151,7 @@
             flight.expectedTurbulence = getVal("inpTurbulence");
             flight.expectedDelays = getVal("inpDelays");
             flight.releaseFuel = document.getElementById("inpReleaseFuel")?.value || "";
+            flight.minToFuel = document.getElementById("inpMinToFuel")?.value || "";
             flight.extraFuel = document.getElementById("inpExtraFuel")?.value || "";
             flight.plannedBurn = document.getElementById("inpPlannedBurn")?.value || "";
             flight.planArrFuel = document.getElementById("inpPlanArrFuel")?.value || "";

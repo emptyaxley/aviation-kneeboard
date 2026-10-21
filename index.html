@@ -300,6 +300,8 @@
                         </div>
                         <div id="faUpdated" class="col-span-2 text-[9px] text-slate-500">Times are shown as returned by FlightAware, including their timestamp offset where provided.</div>
                     </div>
+                    <button id="btnApplyFlightAware" type="button" onclick="applyFlightAwareToSetup()" class="hidden w-full px-3 py-2 rounded-lg bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300 transition">APPLY TO SETUP FIELDS</button>
+                    <div class="text-[10px] text-slate-500">Fetched data will not change your kneeboard until you apply it and save Setup. Verify aircraft and times against official sources.</div>
                 </section>
 
                 <!-- Identification -->
@@ -930,6 +932,7 @@
         }
 
         const FLIGHTAWARE_WORKER_URL = "https://aa-kneeboard-flight-api.mattaxley.workers.dev";
+        let latestFlightAwareRecord = null;
 
         function faTime(value) {
             if (!value) return "—";
@@ -1005,6 +1008,8 @@
                     message.textContent = `FlightAware returned ${matches.length} record(s), but none matched AAL${flightNumber} with a scheduled departure date of ${flightDate}. Check the selected date before relying on this data.`;
                     return;
                 }
+                latestFlightAwareRecord = selected;
+                document.getElementById("btnApplyFlightAware").classList.remove("hidden");
                 document.getElementById("faStatus").textContent = `${selected.ident || normalizedRequested} · ${selected.status || "Status unavailable"}`;
                 document.getElementById("faAircraft").textContent = selected.aircraftType || "Not reported";
                 document.getElementById("faRegistration").textContent = selected.registration || "Not reported";
@@ -1015,7 +1020,7 @@
                 document.getElementById("faUpdated").textContent = `Retrieved ${new Date().toLocaleString()} · ${matches.length} record(s) returned. Timestamps retain the offset provided by FlightAware.`;
                 results.classList.remove("hidden");
                 message.className = "text-xs text-emerald-300 mono-font";
-                message.textContent = `FlightAware lookup successful for ${data.requestedFlight || normalizedRequested}. This information is supplemental and has not changed your manual dispatch fields.`;
+                message.textContent = `FlightAware lookup successful for ${data.requestedFlight || normalizedRequested}. Tap Apply to Setup Fields, review the values, then save Setup.`;
             } catch (error) {
                 results.classList.add("hidden");
                 message.className = "text-xs text-rose-300 mono-font";
@@ -1024,6 +1029,41 @@
                 button.disabled = false;
                 button.textContent = "FETCH FLIGHT DATA";
             }
+        }
+
+        function applyFlightAwareToSetup() {
+            const record = latestFlightAwareRecord;
+            if (!record) return;
+            const put = (id, value) => {
+                const el = document.getElementById(id);
+                if (el && value !== undefined && value !== null && String(value).trim() !== "") el.value = String(value).trim();
+            };
+            const clock = value => {
+                if (!value) return "";
+                const m = String(value).match(/T(\d{2}:\d{2})/);
+                return m ? m[1] : "";
+            };
+            const code = airport => airport && airport.code ? airport.code : "";
+            const rawType = String(record.aircraftType || "").toUpperCase();
+            const typeMatch = rawType.match(/A321NX|A321NY|A321NA|A321|A320|A319/);
+            const type = typeMatch ? typeMatch[0] : "";
+
+            if (type) {
+                const normalizedType = type === "A321" ? "A321NA" : type;
+                const typeSelect = document.getElementById("inpActype");
+                if ([...typeSelect.options].some(option => option.value === normalizedType)) typeSelect.value = normalizedType;
+            }
+            put("inpTail", record.registration);
+            put("inpDep", code(record.origin));
+            put("inpArr", code(record.destination));
+            put("inpSchedOut", clock(record.scheduledOut));
+            put("inpSchedIn", clock(record.scheduledIn));
+            put("inpActOut", clock(record.actualOut));
+            put("inpEstIn", clock(record.estimatedIn));
+
+            const message = document.getElementById("faMessage");
+            message.className = "text-xs text-emerald-300 mono-font";
+            message.textContent = "Values copied into Setup. Review aircraft type, route, and times, then use your normal Save Setup action to update the kneeboard.";
         }
 
         function toggleNightMode() {

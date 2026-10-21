@@ -1,402 +1,994 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111916">
-<title>Aviation Kneeboard</title>
-<style>
-:root {
-  color-scheme: dark;
-  --bg: #101613;
-  --panel: #1b2420;
-  --panel2: #222e28;
-  --line: #39473f;
-  --text: #f0f2e9;
-  --muted: #aeb9af;
-  --accent: #e4c878;
-  --green: #8cc9a0;
-  --red: #e59a8c;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  font-size: 14px; padding: 12px;
-}
-button, input, select { font: inherit; }
-button {
-  background: var(--accent); color: #172019; border: 0;
-  padding: 10px 13px; border-radius: 7px; font-weight: 700;
-  min-height: 40px; cursor: pointer;
-}
-button.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--line); }
-button.danger { background: #56332f; color: #fff0ed; }
-button:disabled { opacity: .45; cursor: not-allowed; }
-header {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 12px; border-bottom: 1px solid var(--line); padding: 4px 0 12px;
-}
-.brand { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
-.eyebrow { color: var(--muted); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; }
-.clock { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
-.subclock { color: var(--muted); font-size: 10px; text-align: right; margin-top: 3px; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-.hero {
-  display: grid; grid-template-columns: 1fr auto; gap: 12px;
-  background: var(--panel); border: 1px solid var(--line);
-  padding: 15px; border-radius: 12px;
-}
-.route { font-size: clamp(25px, 5vw, 38px); font-weight: 800; letter-spacing: 1px; margin: 5px 0; }
-.flight-meta { color: var(--muted); line-height: 1.7; }
-.pill { display: inline-block; border: 1px solid var(--line); padding: 5px 8px; border-radius: 6px; color: var(--muted); font-size: 11px; }
-.status { color: var(--green); font-size: 11px; font-weight: 700; }
-.section-title {
-  font-size: 11px; letter-spacing: 1.4px; color: var(--muted);
-  font-weight: 800; text-transform: uppercase; margin: 18px 0 8px;
-}
-.timing-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
-.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
-.tile-label { color: var(--muted); font-size: 10px; letter-spacing: .8px; margin-bottom: 8px; }
-.big-number { font-size: clamp(17px,3vw,25px); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.small-note { color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.4; }
-.progress-track { background: #3b4941; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-.progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width .4s linear; }
-.data-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
-.data-cell { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 11px; min-width: 0; }
-.data-label { color: var(--muted); font-size: 10px; margin-bottom: 6px; }
-.data-value { font-size: 17px; font-weight: 750; overflow-wrap: anywhere; }
-.notice {
-  background: #342f1e; border: 1px solid #6e6035; color: #f3e4ad;
-  padding: 11px; border-radius: 8px; line-height: 1.45; font-size: 11px;
-}
-.supplemental {
-  background: #19232a; border: 1px solid #3c5360; border-radius: 10px; padding: 13px;
-}
-.supplemental .data-value { font-size: 14px; }
-form { margin: 0; }
-.form-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.field label { color: var(--muted); font-size: 11px; }
-.field input, .field select {
-  width: 100%; min-width: 0; background: #111915; color: var(--text);
-  border: 1px solid var(--line); padding: 10px; border-radius: 7px;
-}
-fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 12px 0; min-width: 0; }
-legend { color: var(--accent); font-size: 11px; font-weight: 800; padding: 0 5px; }
-.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.locked-message { color: var(--green); font-size: 12px; margin: 8px 0; }
-footer { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 20px 0 8px; }
-.hidden { display: none !important; }
-@media (max-width: 650px) {
-  body { padding: 9px; }
-  .data-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .hero { padding: 12px; }
-}
-@media (max-width: 390px) {
-  .timing-grid { grid-template-columns: 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aviation Kneeboard Dashboard</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kneeboard">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cockpit: {
+                            bg: '#0a0d12',
+                            panel: '#121822',
+                            border: '#1e293b',
+                            accent: '#00e5ff',
+                            green: '#00ff66',
+                            amber: '#ffb700',
+                            red: '#ff3344',
+                            magenta: '#ff00aa',
+                            text: '#f1f5f9',
+                            subtext: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #0a0d12;
+            color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mono-font {
+            font-family: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .cockpit-panel {
+            background: linear-gradient(145deg, #131a26 0%, #0d121b 100%);
+            border: 1px solid #1f2a3e;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-glow-cyan {
+            border-left: 4px solid #00e5ff;
+        }
+
+        .panel-glow-amber {
+            border-left: 4px solid #ffb700;
+        }
+
+        .night-mode {
+            filter: sepia(100%) hue-rotate(300deg) saturate(700%) contrast(125%);
+            background-color: #050000 !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #202b3c;
+            border-radius: 4px;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-red {
+            animation: pulse-red 1.5s infinite ease-in-out;
+        }
+    </style>
 </head>
-<body>
-<header>
-  <div>
-    <div class="eyebrow">Flight deck utility</div>
-    <div class="brand">AVIATION KNEEBOARD</div>
-    <div class="eyebrow" style="margin-top:4px">Personal dashboard · Not an operational source</div>
-  </div>
-  <div>
-    <div class="clock" id="localClock">--:--:--</div>
-    <div class="subclock" id="localDate">Loading local time</div>
-  </div>
-</header>
+<body class="bg-cockpit-bg text-cockpit-text min-h-screen p-2 sm:p-4 transition-colors duration-300" id="appBody">
 
-<div class="toolbar">
-  <button id="lockButton" class="secondary" type="button">Lock Setup</button>
-  <button id="editButton" class="secondary hidden" type="button">Unlock Setup</button>
-  <button id="clearButton" class="secondary" type="button">Clear Flight</button>
-</div>
-<div id="lockMessage" class="locked-message hidden">Setup locked. Values cannot be edited.</div>
+    <div class="max-w-xl mx-auto flex flex-col gap-3 pb-8" id="appContainer">
+        
+        <!-- TOP HEADER BAR -->
+        <header class="cockpit-panel rounded-xl p-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" id="statusDot"></div>
+                    <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase mono-font">FLIGHT DECK KNEEBOARD</span>
+                </div>
 
-<section class="hero">
-  <div>
-    <div class="eyebrow">Current leg</div>
-    <div class="route"><span id="displayOrigin">----</span> <span style="color:var(--accent)">→</span> <span id="displayDestination">----</span></div>
-    <div class="flight-meta">
-      <span id="displayFlight">Flight not set</span><br>
-      <span id="displayAircraft">Aircraft not set</span>
-      <span id="displayTail"></span><br>
-      <span id="displayDate">No flight date selected</span>
+                <div class="flex items-center gap-1.5">
+                    <button id="btnNight" onclick="toggleNightMode()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1">
+                        <span>🌙</span>
+                        <span class="hidden sm:inline">RED</span>
+                    </button>
+                    <button id="btnLock" onclick="toggleLock()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition">
+                        <span id="lockIcon">🔓</span>
+                    </button>
+                    <button id="btnSetup" onclick="openSetupModal()" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400 transition flex items-center gap-1">
+                        <span>✏️</span>
+                        <span>SETUP</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center py-1">
+                <h1 class="text-4xl sm:text-5xl font-black tracking-widest text-cyan-400 mono-font leading-tight drop-shadow-[0_0_12px_rgba(0,229,255,0.35)]" id="hdrCallsign">3129</h1>
+                <div class="text-xs font-bold text-slate-400 mono-font tracking-wider mt-0.5" id="hdrSubinfo">AAL3129 • A321NA • N915AN</div>
+                <div class="text-[10px] font-semibold text-slate-500 mono-font mt-1" id="hdrFlightDate">FLIGHT DATE: TODAY</div>
+            </div>
+        </header>
+
+        <!-- THREE-BOX FLIGHT DASHBOARD PANEL -->
+        <section class="cockpit-panel rounded-xl p-3 panel-glow-cyan flex flex-col gap-2">
+            
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-1.5 text-xs mono-font">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">FLIGHT INFO</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">UTC:</span>
+                    <span class="text-white font-bold" id="dispUtcTime">00:00:00Z</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+                
+                <!-- BOX 1: DEPARTING -->
+                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
+                    <div>
+                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">DEPARTING</div>
+                        <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispDep">KMKE</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispDepGate">GATE D42</div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-0.5">
+                        <div class="text-slate-400 flex justify-between">
+                            <span>SCHED OUT:</span>
+                            <span class="text-white font-semibold" id="dispSchedOut">15:09</span>
+                        </div>
+                        <div class="text-slate-400 flex justify-between">
+                            <span>EST OUT:</span>
+                            <span class="text-cyan-300 font-bold" id="dispActOut">15:09</span>
+                        </div>
+                        <div class="text-slate-400 flex justify-between">
+                            <span>EST OFF:</span>
+                            <span class="text-cyan-300 font-bold" id="dispEstOff">15:22</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOX 2: ENROUTE -->
+                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
+                    <div>
+                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ENROUTE</div>
+                        <div class="text-base sm:text-xl font-black text-cyan-400 mono-font leading-none" id="dispCruiseAlt">FL350</div>
+                        <div class="text-[10px] sm:text-xs font-semibold text-slate-300 mono-font mt-1" id="dispEnrouteTime">02:28</div>
+                    </div>
+
+                    <div class="my-1 py-1 bg-slate-950/80 rounded border border-slate-800/80">
+                        <div class="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">REMAINING</div>
+                        <div class="text-sm sm:text-lg font-black text-cyan-300 mono-font leading-tight" id="dispCountdown">00:00:00</div>
+                        <div class="text-[10px] font-bold mono-font mt-0.5 text-emerald-400" id="dispSchedDelta">ON TIME</div>
+                    </div>
+
+                    <div class="text-[9px] text-slate-400 font-mono">
+                        <span>PROGRESS: </span><span class="text-cyan-400 font-bold" id="dispProgressPct">0%</span>
+                    </div>
+                </div>
+
+                <!-- BOX 3: ARRIVAL -->
+                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
+                    <div>
+                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ARRIVAL</div>
+                        <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispArr">KCLT</div>
+                        <div class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispArrGate">GATE B14</div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-0.5">
+                        <div class="text-slate-400 flex justify-between">
+                            <span>SCHED IN:</span>
+                            <span class="text-white font-semibold" id="dispSchedIn">18:15</span>
+                        </div>
+                        <div class="text-slate-400 flex justify-between">
+                            <span>EST ON:</span>
+                            <span class="text-cyan-300 font-bold" id="dispEstOn">18:01</span>
+                        </div>
+                        <div class="text-slate-400 flex justify-between">
+                            <span>EST IN:</span>
+                            <span class="text-cyan-300 font-bold" id="dispEstIn">18:15</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center text-[9px] text-slate-400 mb-0.5 font-mono">
+                    <span>COMPLETE</span>
+                    <span class="text-cyan-400 font-bold" id="dispProgressPctSpan">0%</span>
+                </div>
+                <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800 p-0.5">
+                    <div class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full rounded-full transition-all duration-500" id="dispProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DYNAMIC FLIGHT PHASE KNEEBOARD CARD -->
+        <section class="cockpit-panel rounded-xl p-3.5 panel-glow-amber">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2.5">
+                <button onclick="prevPhase()" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 font-bold hover:bg-slate-700 active:scale-95 transition flex items-center justify-center text-sm" aria-label="Previous Phase">
+                    ◀
+                </button>
+                
+                <div class="text-center">
+                    <div class="text-[9px] font-bold text-slate-400 tracking-widest uppercase mono-font" id="phaseSubheading">PHASE 1 OF 9</div>
+                    <div class="text-base sm:text-lg font-black text-amber-400 mono-font tracking-wider" id="phaseTitle">
+                        FA BRIEFING
+                    </div>
+                </div>
+
+                <button onclick="nextPhase()" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 font-bold hover:bg-slate-700 active:scale-95 transition flex items-center justify-center text-sm" aria-label="Next Phase">
+                    ▶
+                </button>
+            </div>
+
+            <div id="phaseContent" class="space-y-2.5"></div>
+
+            <div class="flex justify-center items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-800/80 flex-wrap" id="phaseDots"></div>
+        </section>
+
+        <footer class="text-center py-1 flex justify-between items-center px-2">
+            <span class="text-[9px] text-slate-600 font-mono tracking-widest">Kneeboard v1.7</span>
+            <button onclick="clearStorageData()" class="text-[9px] text-rose-500/80 hover:text-rose-400 underline font-mono">Reset Data</button>
+        </footer>
+
     </div>
-  </div>
-  <div style="text-align:right">
-    <span class="pill" id="saveStatus">Not saved</span>
-    <div class="status" style="margin-top:10px">MANUAL SETUP</div>
-  </div>
-</section>
 
-<div class="section-title">Schedule timer</div>
-<div class="timing-grid">
-  <div class="tile">
-    <div class="tile-label">TIME TO DEPARTURE</div>
-    <div class="big-number" id="departureCountdown">--:--:--</div>
-    <div class="small-note" id="departureDisplay">Departure time not set</div>
-  </div>
-  <div class="tile">
-    <div class="tile-label">SCHEDULED INTERVAL PROGRESS</div>
-    <div class="big-number" id="progressText">--%</div>
-    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-    <div class="small-note" id="progressNote">Based on scheduled times, not aircraft position.</div>
-  </div>
-  <div class="tile">
-    <div class="tile-label">TIME TO ARRIVAL</div>
-    <div class="big-number" id="arrivalCountdown">--:--:--</div>
-    <div class="small-note" id="arrivalDisplay">Arrival time not set</div>
-  </div>
-</div>
+    <!-- GROUND DISPATCH SETUP MODAL -->
+    <div id="setupModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <div class="p-3.5 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <span>✏️</span> Flight Dispatch Setup
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="loadSampleData()" class="px-2 py-1 text-xs font-bold rounded bg-slate-800 text-cyan-400 border border-slate-700 hover:bg-slate-700">Sample</button>
+                    <button type="button" onclick="clearAllInputs()" class="px-2 py-1 text-xs font-bold rounded bg-rose-950/60 text-rose-300 border border-rose-800/80 hover:bg-rose-900">Clear All</button>
+                    <button onclick="closeSetupModal()" class="text-slate-400 hover:text-white p-1 text-lg">✕</button>
+                </div>
+            </div>
 
-<div class="notice" style="margin-top:10px">
-  TIMER LIMITATION: Scheduled interval calculations only. This dashboard does not confirm actual departure, arrival, aircraft position, clearance, weather, or operational status. Confirm all operational information through approved American Airlines sources.
-</div>
+            <div class="p-4 overflow-y-auto space-y-4 text-xs">
+                
+                <!-- Identification -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">1. Aircraft & Flight Identification</div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Flight #</label>
+                            <input type="text" id="inpCallsign" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="3129" oninput="this.value=this.value.replace(/[^0-9]/g, '')" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono uppercase text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">A/C Type</label>
+                            <select id="inpActype" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase cursor-pointer">
+                                <option value="A319">A319</option>
+                                <option value="A320" selected>A320</option>
+                                <option value="A321NA">A321NA</option>
+                                <option value="A321NX">A321NX</option>
+                                <option value="A321NY">A321NY</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">Nose / Tail #</label>
+                            <input type="text" id="inpTail" placeholder="N915AN" autocapitalize="characters" oninput="this.value=this.value.toUpperCase()" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">Flight Day</label>
+                            <select id="inpFlightDay" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm cursor-pointer">
+                                <option value="today">Today</option>
+                                <option value="tomorrow">Tomorrow</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-<div class="section-title">Dispatch / performance — manually entered</div>
-<div class="data-grid">
-  <div class="data-cell"><div class="data-label">CRUISE ALTITUDE</div><div class="data-value" id="vAltitude">—</div></div>
-  <div class="data-cell"><div class="data-label">RELEASE FUEL</div><div class="data-value" id="vFuel">—</div></div>
-  <div class="data-cell"><div class="data-label">EXPECTED BURN</div><div class="data-value" id="vBurn">—</div></div>
-  <div class="data-cell"><div class="data-label">PLAN ARRIVAL FUEL</div><div class="data-value" id="vArrivalFuel">—</div></div>
-  <div class="data-cell"><div class="data-label">FLAPS</div><div class="data-value" id="vFlaps">—</div></div>
-  <div class="data-cell"><div class="data-label">THRUST / FLEX</div><div class="data-value" id="vThrust">—</div></div>
-  <div class="data-cell"><div class="data-label">V1</div><div class="data-value" id="vV1">—</div></div>
-  <div class="data-cell"><div class="data-label">VR / V2</div><div class="data-value" id="vVrV2">—</div></div>
-</div>
+                <!-- Route & Schedule -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">2. Route, Cruise Alt & En Route Time</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1">DEP</label>
+                            <input type="text" id="inpDep" placeholder="KMKE" autocapitalize="characters" onfocus="this.select()" oninput="this.value=this.value.toUpperCase()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">DEP Gate</label>
+                            <input type="text" id="inpDepGate" placeholder="D42" autocapitalize="characters" onfocus="this.select()" oninput="this.value=this.value.toUpperCase()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">ARR</label>
+                            <input type="text" id="inpArr" placeholder="KCLT" autocapitalize="characters" onfocus="this.select()" oninput="this.value=this.value.toUpperCase()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">ARR Gate</label>
+                            <input type="text" id="inpArrGate" placeholder="B14" autocapitalize="characters" onfocus="this.select()" oninput="this.value=this.value.toUpperCase()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase">
+                        </div>
+                    </div>
 
-<div class="section-title">Supplemental flight status</div>
-<div class="supplemental">
-  <div class="eyebrow">External provider · Not connected yet</div>
-  <div class="data-value" style="margin-top:6px">No supplemental data retrieved</div>
-  <div class="small-note">Provider, retrieval time, route matching, and stale-data handling will be added in a later step. No external flight information is currently being queried.</div>
-</div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Cruise Alt</label>
+                            <select id="inpCruiseAlt" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase cursor-pointer"></select>
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">En Route Time (00:00)</label>
+                            <input type="text" id="inpEnrouteTime" inputmode="numeric" pattern="[0-9]*" placeholder="02:28" onfocus="this.select()" oninput="autoFormatEnrouteTime(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                    </div>
+                </div>
 
-<div class="section-title">Flight and dispatch setup</div>
-<form id="setupForm">
-  <fieldset>
-    <legend>Flight identification</legend>
-    <div class="form-grid">
-      <div class="field"><label for="flightNumber">Flight number</label><input id="flightNumber" name="flightNumber" placeholder="AA1234" maxlength="12"></div>
-      <div class="field"><label for="flightDate">Flight date</label><input id="flightDate" name="flightDate" type="date"></div>
-      <div class="field"><label for="aircraftType">Aircraft type</label><input id="aircraftType" name="aircraftType" placeholder="A320 / A321"></div>
-      <div class="field"><label for="tailNumber">Tail number</label><input id="tailNumber" name="tailNumber" placeholder="N123AA"></div>
-      <div class="field"><label for="origin">Origin airport</label><input id="origin" name="origin" placeholder="CLT" maxlength="4"></div>
-      <div class="field"><label for="destination">Destination airport</label><input id="destination" name="destination" placeholder="MKE" maxlength="4"></div>
+                <!-- Scheduled Times -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">3. Scheduled Times</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">SCHED OUT</label>
+                            <input type="text" id="inpSchedOut" inputmode="numeric" pattern="[0-9]*" placeholder="15:09" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('out')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">SCHED OFF</label>
+                            <input type="text" id="inpSchedOff" inputmode="numeric" pattern="[0-9]*" placeholder="15:22" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('off')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">SCHED ON</label>
+                            <input type="text" id="inpSchedOn" inputmode="numeric" pattern="[0-9]*" placeholder="18:01" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('on')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">SCHED IN (+14m)</label>
+                            <input type="text" id="inpSchedIn" inputmode="numeric" pattern="[0-9]*" placeholder="18:15" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('in')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estimated / Actual Times -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-amber-400 uppercase tracking-wider text-[10px]">4. Estimated / Actual Times</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">ACT OUT</label>
+                            <input type="text" id="inpActOut" inputmode="numeric" pattern="[0-9]*" placeholder="15:09" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">EST OFF</label>
+                            <input type="text" id="inpEstOff" inputmode="numeric" pattern="[0-9]*" placeholder="15:22" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">EST ON</label>
+                            <input type="text" id="inpEstOn" inputmode="numeric" pattern="[0-9]*" placeholder="18:01" onfocus="this.select()" oninput="autoFormatTimeInput(this); autoCalcInFromOn('est')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">EST IN (+14m)</label>
+                            <input type="text" id="inpEstIn" inputmode="numeric" pattern="[0-9]*" placeholder="18:15" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FA Briefing / Conditions -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">5. FA Briefing & Flight Conditions</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Expected Turbulence</label>
+                            <input type="text" id="inpTurbulence" placeholder="NONE / LIGHT" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono uppercase text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">Expected Delays</label>
+                            <input type="text" id="inpDelays" placeholder="ON TIME" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono uppercase text-xs">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fuel & Config -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">6. Fuel Planning & Takeoff Config</div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Release Fuel</label>
+                            <input type="number" inputmode="decimal" step="0.1" min="0" id="inpReleaseFuel" placeholder="18.5" onfocus="this.select()" oninput="calcPlanArrFuel()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Extra Fuel</label>
+                            <input type="number" inputmode="decimal" step="0.1" min="0" id="inpExtraFuel" placeholder="4.5" onfocus="this.select()" oninput="calcPlanArrFuel()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Planned Burn</label>
+                            <input type="number" inputmode="decimal" step="0.1" min="0" id="inpPlannedBurn" placeholder="10.4" onfocus="this.select()" oninput="calcPlanArrFuel()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Plan Arr Fuel</label>
+                            <input type="number" inputmode="decimal" step="0.1" min="0" id="inpPlanArrFuel" placeholder="12.6" onfocus="this.select()" class="w-full bg-slate-900 border border-cyan-800 p-2 rounded text-cyan-300 font-mono text-xs font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-5 gap-2 pt-2">
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Flaps</label>
+                            <input type="number" inputmode="numeric" step="1" min="0" id="inpFlaps" placeholder="1" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">Thrust</label>
+                            <input type="number" inputmode="numeric" step="1" min="0" id="inpThrust" placeholder="TOGA if blank" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">V1</label>
+                            <input type="number" inputmode="numeric" step="1" min="0" id="inpV1" placeholder="" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">VR</label>
+                            <input type="number" inputmode="numeric" step="1" min="0" id="inpVr" placeholder="" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1 text-[10px]">V2</label>
+                            <input type="number" inputmode="numeric" step="1" min="0" id="inpV2" placeholder="" onfocus="this.select()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-xs">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-3 border-t border-slate-800 flex justify-between items-center bg-slate-950 rounded-b-xl">
+                <button type="button" onclick="loadSampleData()" class="text-slate-400 hover:text-white text-xs underline">Load Sample (AA 3129)</button>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeSetupModal()" class="px-3 py-1.5 rounded bg-slate-800 text-slate-300 text-xs hover:bg-slate-700">Cancel</button>
+                    <button type="button" onclick="saveSetupModal()" class="px-5 py-1.5 rounded bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300">SAVE & CLOSE</button>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </fieldset>
 
-  <fieldset>
-    <legend>Scheduled times — device local time for this first version</legend>
-    <div class="notice">For now, enter the schedule in the same time zone as the device running this page. Airport-specific time-zone conversion will be added before external times are connected.</div>
-    <div class="form-grid" style="margin-top:10px">
-      <div class="field"><label for="scheduledDeparture">Scheduled departure</label><input id="scheduledDeparture" name="scheduledDeparture" type="datetime-local"></div>
-      <div class="field"><label for="scheduledArrival">Scheduled arrival</label><input id="scheduledArrival" name="scheduledArrival" type="datetime-local"></div>
-    </div>
-  </fieldset>
+    <script>
+        function localDateString(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        }
 
-  <fieldset>
-    <legend>Dispatch / performance entries</legend>
-    <div class="form-grid">
-      <div class="field"><label for="altitude">Cruise altitude</label><input id="altitude" name="altitude" placeholder="e.g. FL350"></div>
-      <div class="field"><label for="releaseFuel">Release fuel</label><input id="releaseFuel" name="releaseFuel" placeholder="Enter units"></div>
-      <div class="field"><label for="fuelBurn">Expected fuel burn</label><input id="fuelBurn" name="fuelBurn" placeholder="Enter units"></div>
-      <div class="field"><label for="arrivalFuel">Planned arrival fuel</label><input id="arrivalFuel" name="arrivalFuel" placeholder="Enter units"></div>
-      <div class="field"><label for="flaps">Flaps</label><input id="flaps" name="flaps" placeholder="Manual entry"></div>
-      <div class="field"><label for="thrust">Thrust / FLEX</label><input id="thrust" name="thrust" placeholder="Manual entry"></div>
-      <div class="field"><label for="v1">V1</label><input id="v1" name="v1" inputmode="numeric"></div>
-      <div class="field"><label for="vr">VR</label><input id="vr" name="vr" inputmode="numeric"></div>
-      <div class="field"><label for="v2">V2</label><input id="v2" name="v2" inputmode="numeric"></div>
-    </div>
-  </fieldset>
+        function dateWithOffset(offsetDays) {
+            const d = new Date();
+            d.setHours(12, 0, 0, 0);
+            d.setDate(d.getDate() + offsetDays);
+            return localDateString(d);
+        }
 
-  <div class="form-actions">
-    <button type="submit" id="saveButton">Save Flight Setup</button>
-    <button type="button" class="secondary" id="loadButton">Load Saved Setup</button>
-  </div>
-</form>
+        function initAltitudeOptions() {
+            const select = document.getElementById("inpCruiseAlt");
+            if (!select) return;
+            const values = [];
+            for (let n = 50; n <= 180; n += 10) values.push(String(n).padStart(3, "0"));
+            for (let n = 180; n <= 390; n += 10) values.push("FL" + n);
+            select.replaceChildren();
+            values.forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+            select.value = "FL350";
+        }
 
-<footer>
-  PERSONAL KNEEBOARD TOOL · Manual entries are stored in this browser's local storage on this device. Do not enter sensitive company or personal information. This is not an American Airlines application and does not replace approved manuals, dispatch releases, performance tools, weather sources, or company procedures.
-</footer>
+        const DEFAULT_FLIGHT = {
+            callsign: "3129",
+            actype: "A321NA",
+            flightDate: localDateString(new Date()),
+            tail: "N915AN",
+            dep: "KMKE",
+            depGate: "D42",
+            arr: "KCLT",
+            arrGate: "B14",
+            cruiseAlt: "FL350",
+            enrouteTime: "02:28",
+            schedOut: "15:09",
+            schedOff: "15:22",
+            schedOn: "18:01",
+            schedIn: "18:15",
+            actOut: "15:09",
+            estOff: "15:22",
+            estOn: "18:01",
+            estIn: "18:15",
+            expectedTurbulence: "NONE / LIGHT",
+            expectedDelays: "ON TIME",
+            releaseFuel: "18.5",
+            extraFuel: "4.5",
+            plannedBurn: "10.4",
+            planArrFuel: "12.6",
+            flaps: "1",
+            thrust: "",
+            v1: "",
+            vr: "",
+            v2: ""
+        };
 
-<script>
-(function () {
-  "use strict";
+        let flight = loadSavedFlightData();
+        let isNightMode = false;
+        let isLocked = false;
+        let currentPhase = 0;
 
-  const STORAGE_KEY = "aviationKneeboard.v1";
-  const form = document.getElementById("setupForm");
-  const formFields = Array.from(form.querySelectorAll("input"));
-  const $ = id => document.getElementById(id);
+        let cruiseTimerSeconds = 0;
+        let cruiseTimerRunning = false;
+        let cruiseTimerInterval = null;
 
-  function getFormData() {
-    const data = {};
-    formFields.forEach(input => data[input.name] = input.value.trim());
-    return data;
-  }
+        const PHASES = [
+            { id: "fa_briefing", title: "FA BRIEFING", sub: "CABIN CREW BRIEFING" },
+            { id: "origination", title: "ORIGINATION", sub: "PRIOR TO EVERY FLIGHT" },
+            { id: "preflight", title: "PREFLIGHT", sub: "AFTER PDC AND ROUTE VERIFICATION" },
+            { id: "before_start", title: "BEFORE START", sub: "D-10 AND FUELED" },
+            { id: "before_pushback", title: "BEFORE PUSHBACK", sub: "DOORS CLOSED, CABIN SECURE, GROUND BRIEFING" },
+            { id: "pre_taxi", title: "PRE TAXI", sub: "EQUIPMENT CLEAR AND ENG STABLE" },
+            { id: "takeoff", title: "TAKEOFF", sub: "WWT, ENGINES STABLE, FLAPS SET" },
+            { id: "cruise", title: "CRUISE", sub: "IN-FLIGHT MONITORING" },
+            { id: "shutdown", title: "SHUTDOWN", sub: "AFTER PARKING AT GATE" }
+        ];
 
-  function setFormData(data) {
-    formFields.forEach(input => {
-      input.value = data && typeof data[input.name] === "string"
-        ? data[input.name] : "";
-    });
-    renderDashboard();
-  }
+        function calcPlanArrFuel() {
+            const rel = parseFloat(document.getElementById("inpReleaseFuel")?.value) || 0;
+            const extra = parseFloat(document.getElementById("inpExtraFuel")?.value) || 0;
+            const burn = parseFloat(document.getElementById("inpPlannedBurn")?.value) || 0;
+            const planArr = document.getElementById("inpPlanArrFuel");
+            if (planArr && (rel > 0 || burn > 0)) {
+                const res = rel + extra - burn;
+                planArr.value = res > 0 ? res.toFixed(1) : "0.0";
+            }
+        }
 
-  function saveData() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormData()));
-      $("saveStatus").textContent = "Saved on this device";
-      renderDashboard();
-    } catch (err) {
-      $("saveStatus").textContent = "Save failed";
-      alert("Could not save this setup in the browser. Check storage settings.");
-    }
-  }
+        function autoFormatTimeInput(el) {
+            if (!el || !el.value) return;
+            let val = el.value.replace(/[^0-9]/g, '');
+            if (val.length === 4) el.value = val.substring(0, 2) + ":" + val.substring(2, 4);
+        }
 
-  function loadData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        $("saveStatus").textContent = "No saved setup";
-        return;
-      }
-      const data = JSON.parse(raw);
-      setFormData(data);
-      $("saveStatus").textContent = "Loaded from this device";
-    } catch (err) {
-      $("saveStatus").textContent = "Saved data unavailable";
-    }
-  }
+        function autoFormatEnrouteTime(el) {
+            if (!el || !el.value) return;
+            let val = el.value.replace(/[^0-9]/g, '');
+            if (val.length === 4) el.value = val.substring(0, 2) + ":" + val.substring(2, 4);
+        }
 
-  function safeText(id, value, fallback) {
-    $(id).textContent = value || fallback || "—";
-  }
+        function addMinutesToTimeStr(timeStr, mins = 14) {
+            if (!timeStr || !timeStr.includes(":")) return "";
+            let p = timeStr.split(":");
+            let total = (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0) + mins;
+            total = (total + 1440) % 1440;
+            return String(Math.floor(total / 60)).padStart(2, '0') + ":" + String(total % 60).padStart(2, '0');
+        }
 
-  function renderDashboard() {
-    const d = getFormData();
-    safeText("displayOrigin", d.origin.toUpperCase(), "----");
-    safeText("displayDestination", d.destination.toUpperCase(), "----");
-    safeText("displayFlight", d.flightNumber.toUpperCase(), "Flight not set");
-    safeText("displayAircraft", d.aircraftType, "Aircraft not set");
-    safeText("displayTail", d.tailNumber ? " · " + d.tailNumber.toUpperCase() : "", "");
-    safeText("displayDate", d.flightDate ? "Flight date: " + d.flightDate : "", "No flight date selected");
+        function autoCalcInFromOn(type) {
+            const elOn = document.getElementById(type === 'sched' ? "inpSchedOn" : "inpEstOn");
+            const elIn = document.getElementById(type === 'sched' ? "inpSchedIn" : "inpEstIn");
+            if (elOn && elIn && elOn.value) elIn.value = addMinutesToTimeStr(elOn.value, 14);
+        }
 
-    safeText("vAltitude", d.altitude, "—");
-    safeText("vFuel", d.releaseFuel, "—");
-    safeText("vBurn", d.fuelBurn, "—");
-    safeText("vArrivalFuel", d.arrivalFuel, "—");
-    safeText("vFlaps", d.flaps, "—");
-    safeText("vThrust", d.thrust, "—");
-    safeText("vV1", d.v1, "—");
-    safeText("vVrV2", [d.vr, d.v2].filter(Boolean).join(" / "), "—");
+        function syncSchedToEst(field) {
+            if (field === 'out') {
+                let val = document.getElementById("inpSchedOut").value;
+                document.getElementById("inpActOut").value = val;
+                flight.schedOut = val;
+                flight.actOut = val;
+            }
+            if (field === 'off') {
+                let val = document.getElementById("inpSchedOff").value;
+                document.getElementById("inpEstOff").value = val;
+                flight.schedOff = val;
+                flight.estOff = val;
+            }
+            if (field === 'on') {
+                autoCalcInFromOn('sched');
+                let valOn = document.getElementById("inpSchedOn").value;
+                let valIn = document.getElementById("inpSchedIn").value;
+                document.getElementById("inpEstOn").value = valOn;
+                document.getElementById("inpEstIn").value = valIn;
+                flight.schedOn = valOn;
+                flight.estOn = valOn;
+                flight.schedIn = valIn;
+                flight.estIn = valIn;
+            }
+            if (field === 'in') {
+                let val = document.getElementById("inpSchedIn").value;
+                document.getElementById("inpEstIn").value = val;
+                flight.schedIn = val;
+                flight.estIn = val;
+            }
+            saveFlightData();
+            renderUI();
+        }
 
-    safeText("departureDisplay", d.scheduledDeparture
-      ? new Date(d.scheduledDeparture).toLocaleString() : "", "Departure time not set");
-    safeText("arrivalDisplay", d.scheduledArrival
-      ? new Date(d.scheduledArrival).toLocaleString() : "", "Arrival time not set");
+        function nextPhase() { currentPhase = (currentPhase + 1) % PHASES.length; renderPhase(); }
+        function prevPhase() { currentPhase = (currentPhase - 1 + PHASES.length) % PHASES.length; renderPhase(); }
+        function setPhase(idx) { currentPhase = idx; renderPhase(); }
 
-    updateTiming();
-  }
+        function toggleCruiseTimer() {
+            if (!cruiseTimerRunning) {
+                cruiseTimerRunning = true;
+                if (!cruiseTimerInterval) {
+                    cruiseTimerInterval = setInterval(() => {
+                        cruiseTimerSeconds++;
+                        const disp = document.getElementById("cruiseTimerDisplay");
+                        const status = document.getElementById("cruiseTimerStatus");
+                        if (disp) {
+                            disp.innerText = formatSecondsToTimer(cruiseTimerSeconds);
+                            if (cruiseTimerSeconds >= 3600) {
+                                disp.className = "text-3xl sm:text-4xl font-black text-rose-500 mono-font tracking-widest";
+                                if (status) status.innerText = "⚠️ TIME LIMIT REACHED (>1 HR)";
+                            }
+                        }
+                    }, 1000);
+                }
+            } else {
+                cruiseTimerRunning = false;
+                cruiseTimerSeconds = 0;
+                if (cruiseTimerInterval) { clearInterval(cruiseTimerInterval); cruiseTimerInterval = null; }
+                const disp = document.getElementById("cruiseTimerDisplay");
+                if (disp) { disp.innerText = "00:00:00"; disp.className = "text-3xl sm:text-4xl font-black text-cyan-300 mono-font tracking-widest"; }
+            }
+        }
 
-  function duration(ms) {
-    const secs = Math.max(0, Math.floor(ms / 1000));
-    const h = Math.floor(secs / 3600);
-    const m = Math.floor((secs % 3600) / 60);
-    const s = secs % 60;
-    return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
-  }
+        function formatSecondsToTimer(sec) {
+            return String(Math.floor(sec / 3600)).padStart(2, '0') + ":" + String(Math.floor((sec % 3600) / 60)).padStart(2, '0') + ":" + String(sec % 60).padStart(2, '0');
+        }
 
-  function updateTiming() {
-    const d = getFormData();
-    const dep = d.scheduledDeparture ? new Date(d.scheduledDeparture).getTime() : NaN;
-    const arr = d.scheduledArrival ? new Date(d.scheduledArrival).getTime() : NaN;
-    const now = Date.now();
+        function renderPhase() {
+            const p = PHASES[currentPhase];
+            document.getElementById("phaseSubheading").innerText = `${p.sub} (${currentPhase + 1}/${PHASES.length})`;
+            document.getElementById("phaseTitle").innerText = p.title;
 
-    if (!Number.isFinite(dep) || !Number.isFinite(arr) || arr <= dep) {
-      $("departureCountdown").textContent = "--:--:--";
-      $("arrivalCountdown").textContent = "--:--:--";
-      $("progressText").textContent = "--%";
-      $("progressBar").style.width = "0%";
-      $("progressNote").textContent = "Enter valid scheduled times.";
-      return;
-    }
+            document.getElementById("phaseDots").innerHTML = PHASES.map((_, idx) => `
+                <button onclick="setPhase(${idx})" class="w-2.5 h-2.5 rounded-full transition-all ${idx === currentPhase ? 'bg-amber-400 w-6' : 'bg-slate-700 hover:bg-slate-500'}"></button>
+            `).join('');
 
-    if (now < dep) {
-      $("departureCountdown").textContent = duration(dep - now);
-      $("arrivalCountdown").textContent = duration(arr - now);
-      $("progressText").textContent = "0%";
-      $("progressBar").style.width = "0%";
-      $("progressNote").textContent = "Not departed by schedule.";
-    } else if (now >= arr) {
-      $("departureCountdown").textContent = "Elapsed";
-      $("arrivalCountdown").textContent = "00:00:00";
-      $("progressText").textContent = "100%";
-      $("progressBar").style.width = "100%";
-      $("progressNote").textContent = "Scheduled interval complete; actual arrival not confirmed.";
-    } else {
-      const pct = Math.min(100, Math.max(0, ((now - dep) / (arr - dep)) * 100));
-      $("departureCountdown").textContent = "Departed by schedule";
-      $("arrivalCountdown").textContent = duration(arr - now);
-      $("progressText").textContent = Math.floor(pct) + "%";
-      $("progressBar").style.width = pct + "%";
-      $("progressNote").textContent = "Elapsed scheduled interval; not aircraft position.";
-    }
-  }
+            const contentEl = document.getElementById("phaseContent");
+            if (!contentEl) return;
 
-  function setLocked(locked) {
-    formFields.forEach(input => input.disabled = locked);
-    $("saveButton").disabled = locked;
-    $("loadButton").disabled = locked;
-    $("lockButton").classList.toggle("hidden", locked);
-    $("editButton").classList.toggle("hidden", !locked);
-    $("lockMessage").classList.toggle("hidden", !locked);
-  }
+            if (currentPhase === 0) {
+                contentEl.innerHTML = `
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-slate-900/90 border border-amber-500/30 p-2 rounded-lg">
+                            <div class="text-[9px] uppercase font-bold text-slate-400">EXPECTED DELAYS</div>
+                            <div class="text-xs sm:text-sm font-black text-amber-400 mono-font mt-0.5 truncate">${flight.expectedDelays || 'ON TIME'}</div>
+                        </div>
+                        <div class="bg-slate-900/90 border border-amber-500/30 p-2 rounded-lg">
+                            <div class="text-[9px] uppercase font-bold text-slate-400">TURBULENCE</div>
+                            <div class="text-xs sm:text-sm font-black text-cyan-300 mono-font mt-0.5 truncate">${flight.expectedTurbulence || 'NONE'}</div>
+                        </div>
+                        <div class="bg-slate-900/90 border border-amber-500/30 p-2 rounded-lg">
+                            <div class="text-[9px] uppercase font-bold text-slate-400">FLIGHT TIME</div>
+                            <div class="text-xs sm:text-sm font-black text-white mono-font mt-0.5 truncate">${flight.enrouteTime || '02:28'}</div>
+                        </div>
+                    </div>
+                    <div class="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2.5 text-xs space-y-1.5 text-slate-200">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1 border-b border-amber-500/20 pb-1 flex items-center justify-between">
+                            <span>📋 BRIEFING CHECKLIST NOTES</span>
+                            <span class="text-[9px] font-mono text-amber-300/80">VERIFY WITH FA</span>
+                        </div>
+                        <div class="flex items-start gap-2"><span>•</span><span><strong>Maintenance issues</strong> & technical status</span></div>
+                        <div class="flex items-start gap-2"><span>•</span><span><strong>Security concerns</strong> & cockpit door procedures</span></div>
+                        <div class="flex items-start gap-2"><span>•</span><span><strong>International brief</strong> <em>(Passports? Paperwork?)</em></span></div>
+                        <div class="flex items-start gap-2"><span>•</span><span><strong>Short taxi</strong> advisories & cabin readiness</span></div>
+                    </div>
+                `;
+            } else if (currentPhase === 1) {
+                contentEl.innerHTML = `
+                    <div class="bg-gradient-to-r from-amber-950/60 via-slate-900 to-amber-950/60 border border-amber-500/50 p-2.5 rounded-lg text-center shadow">
+                        <div class="text-[10px] font-bold text-amber-300 uppercase tracking-widest mb-0.5">ORIGINATION MEMORY PROMPT</div>
+                        <div class="text-xl sm:text-2xl font-black text-amber-400 mono-font tracking-widest">FORMS to OHOS</div>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-800 p-2.5 rounded-lg text-xs space-y-2">
+                        <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider border-b border-slate-800 pb-1">AIRCRAFT'S FIRST CREWED FLIGHT OF THE DAY</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-slate-200 font-mono text-[11px]">
+                            <div class="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-emerald-400 font-bold">☑</span><span>Alt Brake Check</span></div>
+                            <div class="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-emerald-400 font-bold">☑</span><span>CVR</span></div>
+                            <div class="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-emerald-400 font-bold">☑</span><span>Door check <span class="text-slate-400 text-[10px]">(locked then unlock)</span></span></div>
+                            <div class="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded border border-slate-800"><span class="text-emerald-400 font-bold">☑</span><span>Electrical check <span class="text-slate-400 text-[10px]">(<10s <60A)</span></span></div>
+                            <div class="flex items-center gap-1.5 bg-slate-950/60 p-1.5 rounded border border-slate-800 col-span-1 sm:col-span-2"><span class="text-emerald-400 font-bold">☑</span><span>Fire check</span></div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentPhase === 2) {
+                contentEl.innerHTML = `
+                    <div class="bg-slate-900/90 border border-cyan-500/30 p-2.5 rounded-lg space-y-1 text-center">
+                        <div class="text-xs sm:text-sm font-black text-cyan-300 mono-font">Signed, Aligned, Listen, Glisten</div>
+                        <div class="text-xs font-bold text-amber-400 mono-font">ND ➔ ALT • Brakes, Strake • O2 & Howdy-Do</div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs space-y-2">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-1">
+                            <span class="font-bold text-amber-400 uppercase text-[10px]">📢 "HOWDY-DO" WELCOME ABOARD PA DATA</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5 text-center font-mono bg-slate-900 p-2 rounded border border-slate-800">
+                            <div><div class="text-[8px] text-slate-400">FLIGHT</div><div class="font-black text-cyan-400 text-xs">AAL${flight.callsign || '----'}</div></div>
+                            <div><div class="text-[8px] text-slate-400">FROM</div><div class="font-black text-white text-xs">${flight.dep || '---'}</div></div>
+                            <div><div class="text-[8px] text-slate-400">TO</div><div class="font-black text-white text-xs">${flight.arr || '---'}</div></div>
+                            <div><div class="text-[8px] text-slate-400">ENROUTE</div><div class="font-black text-emerald-400 text-xs">${flight.enrouteTime || '---'}</div></div>
+                        </div>
+                        <div class="space-y-1 text-slate-300 text-[11px] pt-1">
+                            <div class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">▪</span><span>Mention expected delay info</span></div>
+                            <div class="flex items-center gap-1.5"><span class="text-amber-400 font-bold">▪</span><span>Introduce Flight Attendant direct representative</span></div>
+                            <div class="flex items-center gap-1.5 font-semibold text-white"><span class="text-amber-400 font-bold">▪</span><span>Wrap up with <strong>"Welcome aboard"</strong></span></div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentPhase === 3) {
+                contentEl.innerHTML = `
+                    <div class="bg-slate-900/90 border border-amber-500/30 p-2.5 rounded-lg space-y-1.5 text-center">
+                        <div class="text-xs sm:text-sm font-black text-cyan-300 mono-font">AML ➔ APU ➔ PUMPS</div>
+                        <div class="text-xs font-bold text-slate-200 mono-font flex justify-center items-center gap-2">
+                            <span class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-amber-300">BELTS FHPED</span>
+                            <span>•</span>
+                            <span class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-amber-300">WINDOWS/PEDS</span>
+                        </div>
+                        <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-3 py-1 rounded text-xs mt-1">📢 CALL FOR BEFORE START CHECKLIST</span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs space-y-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center font-mono">
+                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">TAIL #</div><div class="font-black text-cyan-400 text-xs">${flight.tail || '---'}</div></div>
+                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">FUEL</div><div class="font-black text-amber-400 text-xs">${flight.releaseFuel || '---'} K</div></div>
+                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">ALTIMETER</div><div class="font-black text-white text-xs">30.12</div></div>
+                            <div class="bg-slate-900 p-2 rounded border border-slate-800"><div class="text-[8px] text-slate-400">FLAPS</div><div class="font-black text-emerald-400 text-xs">${flight.flaps || '--'}</div></div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentPhase === 4) {
+                contentEl.innerHTML = `
+                    <div class="bg-slate-900/90 border border-cyan-500/40 p-3 rounded-lg text-center space-y-2">
+                        <div class="text-xl font-black text-cyan-300 mono-font">P.A.N.T.S. • BEACON ON • Start MFB</div>
+                        <div class="text-xs text-rose-400 font-bold">⚠️ Remember to submit RFD if there was a delay!</div>
+                    </div>
+                `;
+            } else if (currentPhase === 5) {
+                contentEl.innerHTML = `
+                    <div class="bg-amber-950/30 border border-amber-500/50 p-3 rounded-lg text-center space-y-2">
+                        <div class="text-base font-black text-amber-300 mono-font">"I have a salute, Flaps ${flight.flaps || '#'}"</div>
+                        <div class="text-xs text-slate-300 font-mono">Arm Spoilers, Radios, EAI</div>
+                        <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-3 py-1 rounded text-xs">📢 CALL FOR AFTER START CHECKLIST</span>
+                    </div>
+                `;
+            } else if (currentPhase === 6) {
+                contentEl.innerHTML = `
+                    <div class="bg-slate-900/90 border border-cyan-500/40 p-3 rounded-lg space-y-2 text-center">
+                        <div class="text-xs font-bold text-amber-300">Flight Control Check • Thrust Bump • T/O Data</div>
+                        <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-3 py-1 rounded text-xs">📢 CALL FOR BEFORE TAKEOFF CHECKLIST</span>
+                        <div class="grid grid-cols-3 gap-2 text-xs font-mono pt-1">
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Flaps: <strong>${flight.flaps || '--'}</strong></div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Thrust: <strong>${flight.thrust || 'TOGA'}</strong></div>
+                            <div class="bg-slate-950 p-1.5 rounded border border-slate-800">Min T/O Fuel: <strong>${flight.releaseFuel || '--'} K</strong></div>
+                        </div>
+                        <div class="text-[11px] text-cyan-300 font-bold pt-1">Approaching #1 for Departure: Check FMA, RWY, and FMS</div>
+                    </div>
+                `;
+            } else if (currentPhase === 7) {
+                contentEl.innerHTML = `
+                    <div onclick="toggleCruiseTimer()" class="bg-slate-900 border border-cyan-500/50 p-4 rounded-xl text-center cursor-pointer active:scale-98 transition space-y-2 select-none">
+                        <div id="cruiseTimerStatus" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">○ TAP TO START TIMER</div>
+                        <div id="cruiseTimerDisplay" class="text-3xl sm:text-4xl font-black text-cyan-300 mono-font tracking-widest">00:00:00</div>
+                    </div>
+                `;
+            } else if (currentPhase === 8) {
+                contentEl.innerHTML = `
+                    <div class="bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs space-y-1.5 font-mono">
+                        <div class="text-rose-400 font-bold">1. SEATBELT OFF</div>
+                        <div class="text-amber-300 font-bold">2. EAI / ENG 2 OFF</div>
+                        <div class="text-cyan-300 font-bold">3. Confirm PWR established</div>
+                        <div class="text-amber-300 font-bold">4. ENG 1 OFF / FLAPS</div>
+                        <div class="text-emerald-400 font-bold">5. Y / PUMPS / GPWS / BEACON</div>
+                        <div class="text-white font-bold">6. Oil, HYDs, O2, Status</div>
+                        <div class="text-amber-400 text-[11px] pt-1">❓ Any AML entries? • APU Bleed ON >2 min after shutdown</div>
+                    </div>
+                `;
+            }
+        }
 
-  form.addEventListener("submit", event => {
-    event.preventDefault();
-    if ($("saveButton").disabled) return;
-    saveData();
-  });
+        function loadSavedFlightData() {
+            try {
+                const data = localStorage.getItem("AA_KNEEBOARD_DATA");
+                if (data) {
+                    const saved = JSON.parse(data);
+                    if (!saved.flightDate) saved.flightDate = localDateString(new Date());
+                    if (saved.actype === "A321") saved.actype = "A321NA";
+                    if (saved.flaps === "1+F") saved.flaps = "1";
+                    if (saved.thrust && /FLEX\s*([0-9.]+)/i.test(saved.thrust)) saved.thrust = RegExp.$1;
+                    return { ...DEFAULT_FLIGHT, ...saved };
+                }
+            } catch (e) {}
+            return { ...DEFAULT_FLIGHT };
+        }
 
-  $("loadButton").addEventListener("click", loadData);
-  $("lockButton").addEventListener("click", () => setLocked(true));
-  $("editButton").addEventListener("click", () => setLocked(false));
+        function saveFlightData() {
+            try {
+                localStorage.setItem("AA_KNEEBOARD_DATA", JSON.stringify(flight));
+            } catch (e) {}
+        }
 
-  $("clearButton").addEventListener("click", () => {
-    if ($("clearButton").disabled) return;
-    if (!confirm("Clear the current form and saved flight setup on this device?")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    form.reset();
-    $("saveStatus").textContent = "Flight cleared";
-    renderDashboard();
-  });
+        function clearStorageData() {
+            try {
+                localStorage.removeItem("AA_KNEEBOARD_DATA");
+                flight = { ...DEFAULT_FLIGHT };
+                renderUI();
+                alert("Flight data reset to default.");
+            } catch(e) {}
+        }
 
-  function updateClock() {
-    const now = new Date();
-    $("localClock").textContent = now.toLocaleTimeString([], {
-      hour: "2-digit", minute: "2-digit", second: "2-digit"
-    });
-    $("localDate").textContent = now.toLocaleDateString([], {
-      weekday: "short", year: "numeric", month: "short", day: "numeric"
-    }) + " · device time";
-  }
+        function renderUI() {
+            document.getElementById("hdrCallsign").innerText = flight.callsign || "----";
+            document.getElementById("hdrSubinfo").innerText = `AAL${flight.callsign || '----'} • ${flight.actype || ''} • ${flight.tail || ''}`;
+            const flightDate = flight.flightDate || localDateString(new Date());
+            const today = localDateString(new Date());
+            const tomorrow = dateWithOffset(1);
+            const dayLabel = flightDate === today ? "TODAY" : flightDate === tomorrow ? "TOMORROW" : flightDate;
+            document.getElementById("hdrFlightDate").innerText = `FLIGHT DATE: ${dayLabel} · ${flightDate}`;
+            document.getElementById("dispDep").innerText = flight.dep || "---";
+            document.getElementById("dispDepGate").innerText = flight.depGate ? `GATE ${flight.depGate}` : "GATE ---";
+            document.getElementById("dispSchedOut").innerText = flight.schedOut || "----";
+            document.getElementById("dispActOut").innerText = flight.actOut || flight.schedOut || "----";
+            document.getElementById("dispEstOff").innerText = flight.estOff || flight.schedOff || "----";
+            document.getElementById("dispArr").innerText = flight.arr || "---";
+            document.getElementById("dispArrGate").innerText = flight.arrGate ? `GATE ${flight.arrGate}` : "GATE ---";
+            document.getElementById("dispSchedIn").innerText = flight.schedIn || "----";
+            document.getElementById("dispEstOn").innerText = flight.estOn || flight.estIn || "----";
+            document.getElementById("dispEstIn").innerText = flight.estIn || flight.schedIn || "----";
+            document.getElementById("dispCruiseAlt").innerText = flight.cruiseAlt || "FL---";
+            document.getElementById("dispEnrouteTime").innerText = flight.enrouteTime || "02:28";
+            renderPhase();
+        }
 
-  loadData();
-  renderDashboard();
-  updateClock();
-  setInterval(updateClock, 1000);
-  setInterval(updateTiming, 1000);
-})();
-</script>
+        function timeOnFlightDate(timeText, dateText) {
+            if (!timeText || !/^\d{1,2}:\d{2}$/.test(timeText)) return null;
+            const parts = timeText.split(":").map(Number);
+            if (parts[0] > 23 || parts[1] > 59) return null;
+            const d = new Date((dateText || localDateString(new Date())) + "T12:00:00");
+            d.setHours(parts[0], parts[1], 0, 0);
+            return d;
+        }
+
+        function updateCalculatedTimers() {
+            const now = new Date();
+            document.getElementById("dispUtcTime").innerText = now.toISOString().substring(11, 19) + "Z";
+            const dateText = flight.flightDate || localDateString(now);
+            const dep = timeOnFlightDate(flight.schedOut, dateText);
+            let arr = timeOnFlightDate(flight.schedIn, dateText);
+            if (dep && arr && arr <= dep) arr.setDate(arr.getDate() + 1);
+            const countdown = document.getElementById("dispCountdown");
+            const progressIds = ["dispProgressPct", "dispProgressPctSpan"];
+            const bar = document.getElementById("dispProgressBar");
+            const delta = document.getElementById("dispSchedDelta");
+            if (!dep || !arr || arr <= dep) {
+                countdown.innerText = "--:--:--";
+                progressIds.forEach(id => document.getElementById(id).innerText = "0%");
+                bar.style.width = "0%";
+                delta.innerText = "SET SCHED TIMES";
+                return;
+            }
+            const fmt = ms => {
+                const secs = Math.max(0, Math.floor(ms / 1000));
+                return [Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60]
+                    .map(n => String(n).padStart(2, "0")).join(":");
+            };
+            let pct = 0;
+            if (now < dep) {
+                countdown.innerText = fmt(dep - now);
+                delta.innerText = "TO SCHED OUT";
+            } else if (now >= arr) {
+                countdown.innerText = "00:00:00";
+                pct = 100;
+                delta.innerText = "SCHED INTERVAL ENDED";
+            } else {
+                countdown.innerText = fmt(arr - now);
+                pct = ((now - dep) / (arr - dep)) * 100;
+                delta.innerText = "TIME REMAINING";
+            }
+            progressIds.forEach(id => document.getElementById(id).innerText = Math.floor(pct) + "%");
+            bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+        }
+
+        function toggleNightMode() {
+            isNightMode = !isNightMode;
+            document.body.classList.toggle("night-mode", isNightMode);
+        }
+
+        function toggleLock() {
+            isLocked = !isLocked;
+            document.getElementById("lockIcon").innerText = isLocked ? "🔒" : "🔓";
+            document.getElementById("btnSetup").disabled = isLocked;
+            document.getElementById("btnSetup").classList.toggle("opacity-40", isLocked);
+        }
+
+        function openSetupModal() {
+            if (isLocked) return;
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
+            setVal("inpCallsign", flight.callsign);
+            setVal("inpActype", flight.actype);
+            const today = localDateString(new Date());
+            const tomorrow = dateWithOffset(1);
+            document.getElementById("inpFlightDay").value = flight.flightDate === tomorrow ? "tomorrow" : "today";
+            setVal("inpTail", flight.tail);
+            setVal("inpDep", flight.dep);
+            setVal("inpDepGate", flight.depGate);
+            setVal("inpArr", flight.arr);
+            setVal("inpArrGate", flight.arrGate);
+            setVal("inpCruiseAlt", flight.cruiseAlt);
+            setVal("inpEnrouteTime", flight.enrouteTime);
+            setVal("inpSchedOut", flight.schedOut);
+            setVal("inpSchedOff", flight.schedOff);
+            setVal("inpSchedOn", flight.schedOn);
+            setVal("inpSchedIn", flight.schedIn);
+            setVal("inpActOut", flight.actOut);
+            setVal("inpEstOff", flight.estOff);
+            setVal("inpEstOn", flight.estOn);
+            setVal("inpEstIn", flight.estIn);
+            setVal("inpTurbulence", flight.expectedTurbulence);
+            setVal("inpDelays", flight.expectedDelays);
+            setVal("inpReleaseFuel", flight.releaseFuel);
+            setVal("inpExtraFuel", flight.extraFuel);
+            setVal("inpPlannedBurn", flight.plannedBurn);
+            setVal("inpPlanArrFuel", flight.planArrFuel);
+            setVal("inpFlaps", flight.flaps);
+            setVal("inpThrust", flight.thrust);
+            setVal("inpV1", flight.v1);
+            setVal("inpVr", flight.vr);
+            setVal("inpV2", flight.v2);
+            document.getElementById("setupModal").classList.remove("hidden");
+        }
+
+        function closeSetupModal() { document.getElementById("setupModal").classList.add("hidden"); }
+        function clearAllInputs() {
+            ["inpCallsign", "inpTail", "inpDep", "inpArr", "inpSchedOut", "inpSchedIn", "inpActOut", "inpEstIn"].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = "";
+            });
+        }
+        function loadSampleData() { flight = { ...DEFAULT_FLIGHT }; saveFlightData(); openSetupModal(); renderUI(); }
+
+        function saveSetupModal() {
+            const getVal = (id) => document.getElementById(id)?.value.trim().toUpperCase() || "";
+            flight.callsign = document.getElementById("inpCallsign").value.replace(/\D/g, '');
+            flight.actype = getVal("inpActype") || "A320";
+            flight.flightDate = dateWithOffset(document.getElementById("inpFlightDay").value === "tomorrow" ? 1 : 0);
+            flight.tail = getVal("inpTail");
+            flight.dep = getVal("inpDep");
+            flight.depGate = getVal("inpDepGate");
+            flight.arr = getVal("inpArr");
+            flight.arrGate = getVal("inpArrGate");
+            flight.cruiseAlt = getVal("inpCruiseAlt");
+            flight.enrouteTime = document.getElementById("inpEnrouteTime")?.value || "02:28";
+            flight.schedOut = document.getElementById("inpSchedOut")?.value || "";
+            flight.schedOff = document.getElementById("inpSchedOff")?.value || "";
+            flight.schedOn = document.getElementById("inpSchedOn")?.value || "";
+            flight.schedIn = document.getElementById("inpSchedIn")?.value || "";
+            flight.actOut = document.getElementById("inpActOut")?.value || "";
+            flight.estOff = document.getElementById("inpEstOff")?.value || "";
+            flight.estOn = document.getElementById("inpEstOn")?.value || "";
+            flight.estIn = document.getElementById("inpEstIn")?.value || "";
+            flight.expectedTurbulence = getVal("inpTurbulence");
+            flight.expectedDelays = getVal("inpDelays");
+            flight.releaseFuel = document.getElementById("inpReleaseFuel")?.value || "";
+            flight.extraFuel = document.getElementById("inpExtraFuel")?.value || "";
+            flight.plannedBurn = document.getElementById("inpPlannedBurn")?.value || "";
+            flight.planArrFuel = document.getElementById("inpPlanArrFuel")?.value || "";
+            flight.flaps = getVal("inpFlaps");
+            flight.thrust = document.getElementById("inpThrust")?.value || "";
+            flight.v1 = document.getElementById("inpV1")?.value || "";
+            flight.vr = document.getElementById("inpVr")?.value || "";
+            flight.v2 = document.getElementById("inpV2")?.value || "";
+            saveFlightData();
+            renderUI();
+            closeSetupModal();
+        }
+
+        window.onload = function() {
+            initAltitudeOptions();
+            if (!flight.flightDate) flight.flightDate = localDateString(new Date());
+            const upperIds = ["inpTail", "inpDep", "inpDepGate", "inpArr", "inpArrGate", "inpTurbulence", "inpDelays"];
+            upperIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener("input", () => { el.value = el.value.toUpperCase(); });
+            });
+            renderUI();
+            setInterval(updateCalculatedTimers, 1000);
+        };
+    </script>
 </body>
 </html>

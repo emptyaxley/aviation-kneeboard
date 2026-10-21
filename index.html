@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111916">
+<title>Aviation Kneeboard</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101613;
+  --panel: #1b2420;
+  --panel2: #222e28;
+  --line: #39473f;
+  --text: #f0f2e9;
+  --muted: #aeb9af;
+  --accent: #e4c878;
+  --green: #8cc9a0;
+  --red: #e59a8c;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-size: 14px; padding: 12px;
+}
+button, input, select { font: inherit; }
+button {
+  background: var(--accent); color: #172019; border: 0;
+  padding: 10px 13px; border-radius: 7px; font-weight: 700;
+  min-height: 40px; cursor: pointer;
+}
+button.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--line); }
+button.danger { background: #56332f; color: #fff0ed; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; border-bottom: 1px solid var(--line); padding: 4px 0 12px;
+}
+.brand { font-weight: 800; font-size: 17px; letter-spacing: .6px; }
+.eyebrow { color: var(--muted); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; }
+.clock { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.subclock { color: var(--muted); font-size: 10px; text-align: right; margin-top: 3px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.hero {
+  display: grid; grid-template-columns: 1fr auto; gap: 12px;
+  background: var(--panel); border: 1px solid var(--line);
+  padding: 15px; border-radius: 12px;
+}
+.route { font-size: clamp(25px, 5vw, 38px); font-weight: 800; letter-spacing: 1px; margin: 5px 0; }
+.flight-meta { color: var(--muted); line-height: 1.7; }
+.pill { display: inline-block; border: 1px solid var(--line); padding: 5px 8px; border-radius: 6px; color: var(--muted); font-size: 11px; }
+.status { color: var(--green); font-size: 11px; font-weight: 700; }
+.section-title {
+  font-size: 11px; letter-spacing: 1.4px; color: var(--muted);
+  font-weight: 800; text-transform: uppercase; margin: 18px 0 8px;
+}
+.timing-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+.tile-label { color: var(--muted); font-size: 10px; letter-spacing: .8px; margin-bottom: 8px; }
+.big-number { font-size: clamp(17px,3vw,25px); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.small-note { color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.4; }
+.progress-track { background: #3b4941; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+.progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width .4s linear; }
+.data-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+.data-cell { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 11px; min-width: 0; }
+.data-label { color: var(--muted); font-size: 10px; margin-bottom: 6px; }
+.data-value { font-size: 17px; font-weight: 750; overflow-wrap: anywhere; }
+.notice {
+  background: #342f1e; border: 1px solid #6e6035; color: #f3e4ad;
+  padding: 11px; border-radius: 8px; line-height: 1.45; font-size: 11px;
+}
+.supplemental {
+  background: #19232a; border: 1px solid #3c5360; border-radius: 10px; padding: 13px;
+}
+.supplemental .data-value { font-size: 14px; }
+form { margin: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { color: var(--muted); font-size: 11px; }
+.field input, .field select {
+  width: 100%; min-width: 0; background: #111915; color: var(--text);
+  border: 1px solid var(--line); padding: 10px; border-radius: 7px;
+}
+fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 12px 0; min-width: 0; }
+legend { color: var(--accent); font-size: 11px; font-weight: 800; padding: 0 5px; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.locked-message { color: var(--green); font-size: 12px; margin: 8px 0; }
+footer { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 20px 0 8px; }
+.hidden { display: none !important; }
+@media (max-width: 650px) {
+  body { padding: 9px; }
+  .data-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .hero { padding: 12px; }
+}
+@media (max-width: 390px) {
+  .timing-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="eyebrow">Flight deck utility</div>
+    <div class="brand">AVIATION KNEEBOARD</div>
+    <div class="eyebrow" style="margin-top:4px">Personal dashboard · Not an operational source</div>
+  </div>
+  <div>
+    <div class="clock" id="localClock">--:--:--</div>
+    <div class="subclock" id="localDate">Loading local time</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button id="lockButton" class="secondary" type="button">Lock Setup</button>
+  <button id="editButton" class="secondary hidden" type="button">Unlock Setup</button>
+  <button id="clearButton" class="secondary" type="button">Clear Flight</button>
+</div>
+<div id="lockMessage" class="locked-message hidden">Setup locked. Values cannot be edited.</div>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Current leg</div>
+    <div class="route"><span id="displayOrigin">----</span> <span style="color:var(--accent)">→</span> <span id="displayDestination">----</span></div>
+    <div class="flight-meta">
+      <span id="displayFlight">Flight not set</span><br>
+      <span id="displayAircraft">Aircraft not set</span>
+      <span id="displayTail"></span><br>
+      <span id="displayDate">No flight date selected</span>
+    </div>
+  </div>
+  <div style="text-align:right">
+    <span class="pill" id="saveStatus">Not saved</span>
+    <div class="status" style="margin-top:10px">MANUAL SETUP</div>
+  </div>
+</section>
+
+<div class="section-title">Schedule timer</div>
+<div class="timing-grid">
+  <div class="tile">
+    <div class="tile-label">TIME TO DEPARTURE</div>
+    <div class="big-number" id="departureCountdown">--:--:--</div>
+    <div class="small-note" id="departureDisplay">Departure time not set</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">SCHEDULED INTERVAL PROGRESS</div>
+    <div class="big-number" id="progressText">--%</div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="small-note" id="progressNote">Based on scheduled times, not aircraft position.</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">TIME TO ARRIVAL</div>
+    <div class="big-number" id="arrivalCountdown">--:--:--</div>
+    <div class="small-note" id="arrivalDisplay">Arrival time not set</div>
+  </div>
+</div>
+
+<div class="notice" style="margin-top:10px">
+  TIMER LIMITATION: Scheduled interval calculations only. This dashboard does not confirm actual departure, arrival, aircraft position, clearance, weather, or operational status. Confirm all operational information through approved American Airlines sources.
+</div>
+
+<div class="section-title">Dispatch / performance — manually entered</div>
+<div class="data-grid">
+  <div class="data-cell"><div class="data-label">CRUISE ALTITUDE</div><div class="data-value" id="vAltitude">—</div></div>
+  <div class="data-cell"><div class="data-label">RELEASE FUEL</div><div class="data-value" id="vFuel">—</div></div>
+  <div class="data-cell"><div class="data-label">EXPECTED BURN</div><div class="data-value" id="vBurn">—</div></div>
+  <div class="data-cell"><div class="data-label">PLAN ARRIVAL FUEL</div><div class="data-value" id="vArrivalFuel">—</div></div>
+  <div class="data-cell"><div class="data-label">FLAPS</div><div class="data-value" id="vFlaps">—</div></div>
+  <div class="data-cell"><div class="data-label">THRUST / FLEX</div><div class="data-value" id="vThrust">—</div></div>
+  <div class="data-cell"><div class="data-label">V1</div><div class="data-value" id="vV1">—</div></div>
+  <div class="data-cell"><div class="data-label">VR / V2</div><div class="data-value" id="vVrV2">—</div></div>
+</div>
+
+<div class="section-title">Supplemental flight status</div>
+<div class="supplemental">
+  <div class="eyebrow">External provider · Not connected yet</div>
+  <div class="data-value" style="margin-top:6px">No supplemental data retrieved</div>
+  <div class="small-note">Provider, retrieval time, route matching, and stale-data handling will be added in a later step. No external flight information is currently being queried.</div>
+</div>
+
+<div class="section-title">Flight and dispatch setup</div>
+<form id="setupForm">
+  <fieldset>
+    <legend>Flight identification</legend>
+    <div class="form-grid">
+      <div class="field"><label for="flightNumber">Flight number</label><input id="flightNumber" name="flightNumber" placeholder="AA1234" maxlength="12"></div>
+      <div class="field"><label for="flightDate">Flight date</label><input id="flightDate" name="flightDate" type="date"></div>
+      <div class="field"><label for="aircraftType">Aircraft type</label><input id="aircraftType" name="aircraftType" placeholder="A320 / A321"></div>
+      <div class="field"><label for="tailNumber">Tail number</label><input id="tailNumber" name="tailNumber" placeholder="N123AA"></div>
+      <div class="field"><label for="origin">Origin airport</label><input id="origin" name="origin" placeholder="CLT" maxlength="4"></div>
+      <div class="field"><label for="destination">Destination airport</label><input id="destination" name="destination" placeholder="MKE" maxlength="4"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Scheduled times — device local time for this first version</legend>
+    <div class="notice">For now, enter the schedule in the same time zone as the device running this page. Airport-specific time-zone conversion will be added before external times are connected.</div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="field"><label for="scheduledDeparture">Scheduled departure</label><input id="scheduledDeparture" name="scheduledDeparture" type="datetime-local"></div>
+      <div class="field"><label for="scheduledArrival">Scheduled arrival</label><input id="scheduledArrival" name="scheduledArrival" type="datetime-local"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Dispatch / performance entries</legend>
+    <div class="form-grid">
+      <div class="field"><label for="altitude">Cruise altitude</label><input id="altitude" name="altitude" placeholder="e.g. FL350"></div>
+      <div class="field"><label for="releaseFuel">Release fuel</label><input id="releaseFuel" name="releaseFuel" placeholder="Enter units"></div>
+      <div class="field"><label for="fuelBurn">Expected fuel burn</label><input id="fuelBurn" name="fuelBurn" placeholder="Enter units"></div>
+      <div class="field"><label for="arrivalFuel">Planned arrival fuel</label><input id="arrivalFuel" name="arrivalFuel" placeholder="Enter units"></div>
+      <div class="field"><label for="flaps">Flaps</label><input id="flaps" name="flaps" placeholder="Manual entry"></div>
+      <div class="field"><label for="thrust">Thrust / FLEX</label><input id="thrust" name="thrust" placeholder="Manual entry"></div>
+      <div class="field"><label for="v1">V1</label><input id="v1" name="v1" inputmode="numeric"></div>
+      <div class="field"><label for="vr">VR</label><input id="vr" name="vr" inputmode="numeric"></div>
+      <div class="field"><label for="v2">V2</label><input id="v2" name="v2" inputmode="numeric"></div>
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="submit" id="saveButton">Save Flight Setup</button>
+    <button type="button" class="secondary" id="loadButton">Load Saved Setup</button>
+  </div>
+</form>
+
+<footer>
+  PERSONAL KNEEBOARD TOOL · Manual entries are stored in this browser's local storage on this device. Do not enter sensitive company or personal information. This is not an American Airlines application and does not replace approved manuals, dispatch releases, performance tools, weather sources, or company procedures.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "aviationKneeboard.v1";
+  const form = document.getElementById("setupForm");
+  const formFields = Array.from(form.querySelectorAll("input"));
+  const $ = id => document.getElementById(id);
+
+  function getFormData() {
+    const data = {};
+    formFields.forEach(input => data[input.name] = input.value.trim());
+    return data;
+  }
+
+  function setFormData(data) {
+    formFields.forEach(input => {
+      input.value = data && typeof data[input.name] === "string"
+        ? data[input.name] : "";
+    });
+    renderDashboard();
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormData()));
+      $("saveStatus").textContent = "Saved on this device";
+      renderDashboard();
+    } catch (err) {
+      $("saveStatus").textContent = "Save failed";
+      alert("Could not save this setup in the browser. Check storage settings.");
+    }
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        $("saveStatus").textContent = "No saved setup";
+        return;
+      }
+      const data = JSON.parse(raw);
+      setFormData(data);
+      $("saveStatus").textContent = "Loaded from this device";
+    } catch (err) {
+      $("saveStatus").textContent = "Saved data unavailable";
+    }
+  }
+
+  function safeText(id, value, fallback) {
+    $(id).textContent = value || fallback || "—";
+  }
+
+  function renderDashboard() {
+    const d = getFormData();
+    safeText("displayOrigin", d.origin.toUpperCase(), "----");
+    safeText("displayDestination", d.destination.toUpperCase(), "----");
+    safeText("displayFlight", d.flightNumber.toUpperCase(), "Flight not set");
+    safeText("displayAircraft", d.aircraftType, "Aircraft not set");
+    safeText("displayTail", d.tailNumber ? " · " + d.tailNumber.toUpperCase() : "", "");
+    safeText("displayDate", d.flightDate ? "Flight date: " + d.flightDate : "", "No flight date selected");
+
+    safeText("vAltitude", d.altitude, "—");
+    safeText("vFuel", d.releaseFuel, "—");
+    safeText("vBurn", d.fuelBurn, "—");
+    safeText("vArrivalFuel", d.arrivalFuel, "—");
+    safeText("vFlaps", d.flaps, "—");
+    safeText("vThrust", d.thrust, "—");
+    safeText("vV1", d.v1, "—");
+    safeText("vVrV2", [d.vr, d.v2].filter(Boolean).join(" / "), "—");
+
+    safeText("departureDisplay", d.scheduledDeparture
+      ? new Date(d.scheduledDeparture).toLocaleString() : "", "Departure time not set");
+    safeText("arrivalDisplay", d.scheduledArrival
+      ? new Date(d.scheduledArrival).toLocaleString() : "", "Arrival time not set");
+
+    updateTiming();
+  }
+
+  function duration(ms) {
+    const secs = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
+  }
+
+  function updateTiming() {
+    const d = getFormData();
+    const dep = d.scheduledDeparture ? new Date(d.scheduledDeparture).getTime() : NaN;
+    const arr = d.scheduledArrival ? new Date(d.scheduledArrival).getTime() : NaN;
+    const now = Date.now();
+
+    if (!Number.isFinite(dep) || !Number.isFinite(arr) || arr <= dep) {
+      $("departureCountdown").textContent = "--:--:--";
+      $("arrivalCountdown").textContent = "--:--:--";
+      $("progressText").textContent = "--%";
+      $("progressBar").style.width = "0%";
+      $("progressNote").textContent = "Enter valid scheduled times.";
+      return;
+    }
+
+    if (now < dep) {
+      $("departureCountdown").textContent = duration(dep - now);
+      $("arrivalCountdown").textContent = duration(arr - now);
+      $("progressText").textContent = "0%";
+      $("progressBar").style.width = "0%";
+      $("progressNote").textContent = "Not departed by schedule.";
+    } else if (now >= arr) {
+      $("departureCountdown").textContent = "Elapsed";
+      $("arrivalCountdown").textContent = "00:00:00";
+      $("progressText").textContent = "100%";
+      $("progressBar").style.width = "100%";
+      $("progressNote").textContent = "Scheduled interval complete; actual arrival not confirmed.";
+    } else {
+      const pct = Math.min(100, Math.max(0, ((now - dep) / (arr - dep)) * 100));
+      $("departureCountdown").textContent = "Departed by schedule";
+      $("arrivalCountdown").textContent = duration(arr - now);
+      $("progressText").textContent = Math.floor(pct) + "%";
+      $("progressBar").style.width = pct + "%";
+      $("progressNote").textContent = "Elapsed scheduled interval; not aircraft position.";
+    }
+  }
+
+  function setLocked(locked) {
+    formFields.forEach(input => input.disabled = locked);
+    $("saveButton").disabled = locked;
+    $("loadButton").disabled = locked;
+    $("lockButton").classList.toggle("hidden", locked);
+    $("editButton").classList.toggle("hidden", !locked);
+    $("lockMessage").classList.toggle("hidden", !locked);
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    if ($("saveButton").disabled) return;
+    saveData();
+  });
+
+  $("loadButton").addEventListener("click", loadData);
+  $("lockButton").addEventListener("click", () => setLocked(true));
+  $("editButton").addEventListener("click", () => setLocked(false));
+
+  $("clearButton").addEventListener("click", () => {
+    if ($("clearButton").disabled) return;
+    if (!confirm("Clear the current form and saved flight setup on this device?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    $("saveStatus").textContent = "Flight cleared";
+    renderDashboard();
+  });
+
+  function updateClock() {
+    const now = new Date();
+    $("localClock").textContent = now.toLocaleTimeString([], {
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
+    });
+    $("localDate").textContent = now.toLocaleDateString([], {
+      weekday: "short", year: "numeric", month: "short", day: "numeric"
+    }) + " · device time";
+  }
+
+  loadData();
+  renderDashboard();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(updateTiming, 1000);
+})();
+</script>
+</body>
+</html>

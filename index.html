@@ -120,48 +120,6 @@
             </div>
         </header>
 
-        <!-- FLIGHTAWARE SUPPLEMENTAL DATA (MANUAL LOOKUP) -->
-        <section class="cockpit-panel rounded-xl p-3 panel-glow-amber flex flex-col gap-2" aria-labelledby="faHeading">
-            <div class="flex items-center justify-between gap-2">
-                <div>
-                    <div id="faHeading" class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mono-font">FLIGHTAWARE · SUPPLEMENTAL</div>
-                    <div class="text-[10px] text-slate-500 mt-1">External tracking data only — verify all operational information with official dispatch sources.</div>
-                </div>
-                <button id="btnFetchFlightAware" type="button" onclick="fetchFlightAware()" class="shrink-0 px-3 py-2 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition">FETCH FLIGHT DATA</button>
-            </div>
-            <div id="faMessage" role="status" aria-live="polite" class="text-xs text-slate-400 mono-font">Tap Fetch Flight Data to request AAL flight information.</div>
-            <div id="faResults" class="hidden grid grid-cols-2 gap-2 text-xs mono-font">
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
-                    <div class="text-[9px] text-slate-500 uppercase">Flight / Status</div>
-                    <div id="faStatus" class="text-sm font-bold text-cyan-300 mt-1">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
-                    <div class="text-[9px] text-slate-500 uppercase">Aircraft</div>
-                    <div id="faAircraft" class="text-slate-100 font-bold mt-1 break-words">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
-                    <div class="text-[9px] text-slate-500 uppercase">Registration</div>
-                    <div id="faRegistration" class="text-slate-100 font-bold mt-1">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
-                    <div class="text-[9px] text-slate-500 uppercase">Origin</div>
-                    <div id="faOrigin" class="text-slate-100 font-bold mt-1 break-words">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2">
-                    <div class="text-[9px] text-slate-500 uppercase">Destination</div>
-                    <div id="faDestination" class="text-slate-100 font-bold mt-1 break-words">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
-                    <div class="text-[9px] text-slate-500 uppercase mb-1">Departure · scheduled / estimated / actual</div>
-                    <div id="faDepartureTimes" class="text-slate-100 break-words">—</div>
-                </div>
-                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 col-span-2">
-                    <div class="text-[9px] text-slate-500 uppercase mb-1">Arrival · scheduled / estimated / actual</div>
-                    <div id="faArrivalTimes" class="text-slate-100 break-words">—</div>
-                </div>
-                <div id="faUpdated" class="col-span-2 text-[9px] text-slate-500">Times are shown as returned by FlightAware, including their timestamp offset where provided.</div>
-            </div>
-        </section>
 
         <!-- THREE-BOX FLIGHT DASHBOARD PANEL -->
         <section class="cockpit-panel rounded-xl p-3 panel-glow-cyan flex flex-col gap-2">
@@ -301,7 +259,50 @@
             </div>
 
             <div class="p-4 overflow-y-auto space-y-4 text-xs">
-                
+                <!-- FLIGHTAWARE LOOKUP: kept in Setup to preserve dashboard space -->
+                <section class="bg-slate-950/80 p-3 rounded-xl border border-amber-800/70 flex flex-col gap-2" aria-labelledby="faHeading">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <div id="faHeading" class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mono-font">FLIGHTAWARE · SUPPLEMENTAL</div>
+                            <div class="text-[10px] text-slate-500 mt-1">External tracking data only — verify all operational information with official dispatch sources.</div>
+                        </div>
+                        <button id="btnFetchFlightAware" type="button" onclick="fetchFlightAware()" class="shrink-0 px-3 py-2 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition">FETCH FLIGHT DATA</button>
+                    </div>
+                    <div id="faMessage" role="status" aria-live="polite" class="text-xs text-slate-400 mono-font">Tap Fetch Flight Data to request AAL flight information.</div>
+                    <div id="faResults" class="hidden grid grid-cols-2 gap-2 text-xs mono-font">
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2 col-span-2">
+                            <div class="text-[9px] text-slate-500 uppercase">Flight / Status</div>
+                            <div id="faStatus" class="text-sm font-bold text-cyan-300 mt-1">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <div class="text-[9px] text-slate-500 uppercase">Aircraft</div>
+                            <div id="faAircraft" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <div class="text-[9px] text-slate-500 uppercase">Registration</div>
+                            <div id="faRegistration" class="text-slate-100 font-bold mt-1">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <div class="text-[9px] text-slate-500 uppercase">Origin</div>
+                            <div id="faOrigin" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <div class="text-[9px] text-slate-500 uppercase">Destination</div>
+                            <div id="faDestination" class="text-slate-100 font-bold mt-1 break-words">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2 col-span-2">
+                            <div class="text-[9px] text-slate-500 uppercase mb-1">Departure · scheduled / estimated / actual</div>
+                            <div id="faDepartureTimes" class="text-slate-100 break-words">—</div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-lg p-2 col-span-2">
+                            <div class="text-[9px] text-slate-500 uppercase mb-1">Arrival · scheduled / estimated / actual</div>
+                            <div id="faArrivalTimes" class="text-slate-100 break-words">—</div>
+                        </div>
+                        <div id="faUpdated" class="col-span-2 text-[9px] text-slate-500">Times are shown as returned by FlightAware, including their timestamp offset where provided.</div>
+                    </div>
+                </section>
+
+                <!-- Identification -->
                 <!-- Identification -->
                 <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
                     <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">1. Aircraft & Flight Identification</div>
@@ -951,8 +952,12 @@
             const button = document.getElementById("btnFetchFlightAware");
             const message = document.getElementById("faMessage");
             const results = document.getElementById("faResults");
-            const flightNumber = String(flight.callsign || "").replace(/\D/g, "");
-            const flightDate = flight.flightDate || localDateString(new Date());
+            const setupOpen = !document.getElementById("setupModal").classList.contains("hidden");
+            const enteredFlight = setupOpen ? document.getElementById("inpCallsign").value : flight.callsign;
+            const flightNumber = String(enteredFlight || "").replace(/\D/g, "");
+            const flightDate = setupOpen
+                ? (document.getElementById("inpFlightDay").value === "tomorrow" ? dateWithOffset(1) : dateWithOffset(0))
+                : (flight.flightDate || localDateString(new Date()));
 
             if (!flightNumber) {
                 message.className = "text-xs text-rose-300 mono-font";

@@ -84,6 +84,12 @@
         .animate-pulse-red {
             animation: pulse-red 1.5s infinite ease-in-out;
         }
+    
+        .text-cyan-300, .text-cyan-400, .text-cyan-500 { color: #6BE0F3 !important; }
+        .bg-cyan-300, .bg-cyan-400, .bg-cyan-500 { background-color: #6BE0F3 !important; }
+        .border-cyan-300, .border-cyan-400, .border-cyan-500 { border-color: #6BE0F3 !important; }
+        .from-cyan-500 { --tw-gradient-from: #6BE0F3 var(--tw-gradient-from-position) !important; }
+        .drop-shadow-\[0_0_12px_rgba\(0\,229\,255\,0\.35\)\] { filter: drop-shadow(0 0 12px rgba(107,224,243,.35)); }
     </style>
 </head>
 <body class="bg-cockpit-bg text-cockpit-text min-h-screen p-2 sm:p-4 transition-colors duration-300" id="appBody">
@@ -99,13 +105,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <button id="btnNight" onclick="toggleNightMode()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1">
-                        <span>🌙</span>
-                        <span class="hidden sm:inline">RED</span>
-                    </button>
-                    <button id="btnLock" onclick="toggleLock()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition">
-                        <span id="lockIcon">🔓</span>
-                    </button>
                     <button id="btnSetup" onclick="openSetupModal()" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400 transition flex items-center gap-1">
                         <span>✏️</span>
                         <span>SETUP</span>
@@ -113,10 +112,12 @@
                 </div>
             </div>
 
-            <div class="text-center py-1">
-                <h1 class="text-4xl sm:text-5xl font-black tracking-widest text-cyan-400 mono-font leading-tight drop-shadow-[0_0_12px_rgba(0,229,255,0.35)]" id="hdrCallsign">3129</h1>
-                <div class="text-xs font-bold text-slate-400 mono-font tracking-wider mt-0.5" id="hdrSubinfo">AAL3129 • A321NA • N915AN</div>
-                <div class="text-[10px] font-semibold text-slate-500 mono-font mt-1" id="hdrFlightDate">FLIGHT DATE: TODAY</div>
+            <div class="flex items-center justify-between gap-3 py-1">
+                <h1 class="text-4xl sm:text-5xl font-black tracking-widest text-cyan-400 mono-font leading-tight drop-shadow-[0_0_12px_rgba(0,229,255,0.35)] text-left shrink-0" id="hdrCallsign">3129</h1>
+                <div class="flex flex-col items-end justify-center min-w-0 text-right">
+                    <div class="text-xs font-bold text-slate-400 mono-font tracking-wider" id="hdrActype">A321NA</div>
+                    <div class="text-xs font-bold text-slate-400 mono-font tracking-wider mt-0.5" id="hdrTail">N915AN</div>
+                </div>
             </div>
         </header>
 
@@ -133,83 +134,38 @@
             </div>
 
             <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
-                
-                <!-- BOX 1: DEPARTING -->
+                <!-- DEPARTURE -->
+                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col text-center">
+                    <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">DEPARTURE</div>
+                    <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispDep">KMKE</div>
+                    <button type="button" class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispDepGate" onclick="editGate('dep')">GATE D42</button>
+                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-1">
+                        <div class="flex justify-between text-slate-400"><span>SCHED OUT Z:</span><span class="text-white font-semibold" id="dispSchedOut">15:09Z</span></div>
+                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">ACTUAL T/O Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('actOut',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute earlier">−</button><span class="text-cyan-300 font-bold min-w-[42px]" id="dispActOut">15:22Z</span><button onclick="adjustTime('actOut',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute later">+</button></div></div>
+                    </div>
+                </div>
+                <!-- ENROUTE -->
                 <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
-                    <div>
-                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">DEPARTING</div>
-                        <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispDep">KMKE</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispDepGate">GATE D42</div>
-                    </div>
-                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-0.5">
-                        <div class="text-slate-400 flex justify-between">
-                            <span>SCHED OUT:</span>
-                            <span class="text-white font-semibold" id="dispSchedOut">15:09</span>
-                        </div>
-                        <div class="text-slate-400 flex justify-between">
-                            <span>EST OUT:</span>
-                            <span class="text-cyan-300 font-bold" id="dispActOut">15:09</span>
-                        </div>
-                        <div class="text-slate-400 flex justify-between">
-                            <span>EST OFF:</span>
-                            <span class="text-cyan-300 font-bold" id="dispEstOff">15:22</span>
-                        </div>
-                    </div>
+                    <div><div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ENROUTE</div><div class="text-base sm:text-xl font-black text-cyan-400 mono-font leading-none" id="dispCruiseAlt">FL350</div><div class="text-[10px] sm:text-xs font-semibold text-slate-300 mono-font mt-1" id="dispEnrouteTime">02:28</div></div>
+                    <div class="my-1 py-2 bg-slate-950/80 rounded border border-slate-800/80"><div class="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">REMAINING</div><div class="text-sm sm:text-lg font-black text-cyan-300 mono-font leading-tight" id="dispCountdown">00:00:00</div><div class="text-[10px] font-bold mono-font mt-0.5 text-emerald-400" id="dispSchedDelta">TIME REMAINING</div></div>
                 </div>
-
-                <!-- BOX 2: ENROUTE -->
-                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
-                    <div>
-                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ENROUTE</div>
-                        <div class="text-base sm:text-xl font-black text-cyan-400 mono-font leading-none" id="dispCruiseAlt">FL350</div>
-                        <div class="text-[10px] sm:text-xs font-semibold text-slate-300 mono-font mt-1" id="dispEnrouteTime">02:28</div>
+                <!-- ARRIVAL -->
+                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col text-center">
+                    <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ARRIVAL</div>
+                    <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispArr">KCLT</div>
+                    <button type="button" class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispArrGate" onclick="editGate('arr')">GATE B14</button>
+                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-1">
+                        <div class="flex justify-between text-slate-400"><span>SCHED ON Z:</span><span class="text-white font-semibold" id="dispSchedOn">18:01Z</span></div>
+                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">EST ON Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('estOn',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute earlier">−</button><span class="text-cyan-300 font-bold min-w-[42px]" id="dispEstOn">18:01Z</span><button onclick="adjustTime('estOn',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute later">+</button></div></div>
                     </div>
-
-                    <div class="my-1 py-1 bg-slate-950/80 rounded border border-slate-800/80">
-                        <div class="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">REMAINING</div>
-                        <div class="text-sm sm:text-lg font-black text-cyan-300 mono-font leading-tight" id="dispCountdown">00:00:00</div>
-                        <div class="text-[10px] font-bold mono-font mt-0.5 text-emerald-400" id="dispSchedDelta">ON TIME</div>
-                    </div>
-
-                    <div class="text-[9px] text-slate-400 font-mono">
-                        <span>PROGRESS: </span><span class="text-cyan-400 font-bold" id="dispProgressPct">0%</span>
-                    </div>
-                </div>
-
-                <!-- BOX 3: ARRIVAL -->
-                <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
-                    <div>
-                        <div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ARRIVAL</div>
-                        <div class="text-xl sm:text-2xl font-black text-cyan-400 mono-font leading-none" id="dispArr">KCLT</div>
-                        <div class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispArrGate">GATE B14</div>
-                    </div>
-                    <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-0.5">
-                        <div class="text-slate-400 flex justify-between">
-                            <span>SCHED IN:</span>
-                            <span class="text-white font-semibold" id="dispSchedIn">18:15</span>
-                        </div>
-                        <div class="text-slate-400 flex justify-between">
-                            <span>EST ON:</span>
-                            <span class="text-cyan-300 font-bold" id="dispEstOn">18:01</span>
-                        </div>
-                        <div class="text-slate-400 flex justify-between">
-                            <span>EST IN:</span>
-                            <span class="text-cyan-300 font-bold" id="dispEstIn">18:15</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div>
-                <div class="flex justify-between items-center text-[9px] text-slate-400 mb-0.5 font-mono">
-                    <span>COMPLETE</span>
-                    <span class="text-cyan-400 font-bold" id="dispProgressPctSpan">0%</span>
-                </div>
-                <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800 p-0.5">
-                    <div class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full rounded-full transition-all duration-500" id="dispProgressBar" style="width: 0%"></div>
                 </div>
             </div>
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-center mono-font">
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800"><div class="text-[9px] text-slate-400 font-bold">RLS FUEL</div><div id="dispReleaseFuel" class="text-sm font-black text-amber-400">-- K</div></div>
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800"><div class="text-[9px] text-slate-400 font-bold">FLAPS/THRUST</div><div id="dispFlapsThrust" class="text-sm font-black text-cyan-300">1/TOGA</div></div>
+                <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800"><div class="text-[9px] text-slate-400 font-bold">MIN T/O FUEL</div><div id="dispMinToFuel" class="text-sm font-black text-amber-400">-- K</div></div>
+            </div>
+
         </section>
 
         <!-- DYNAMIC FLIGHT PHASE KNEEBOARD CARD -->
@@ -339,7 +295,7 @@
 
                 <!-- Route & Schedule -->
                 <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
-                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">2. Route, Cruise Alt & En Route Time</div>
+                    <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">2. Route, Cruise Alt & En Route Time (Zulu)</div>
                     <div class="grid grid-cols-4 gap-2">
                         <div>
                             <label class="text-slate-400 block mb-1">DEP</label>
@@ -381,11 +337,11 @@
                         </div>
                         <div>
                             <label class="text-slate-400 block mb-1 text-[10px]">SCHED OFF</label>
-                            <input type="text" id="inpSchedOff" inputmode="numeric" pattern="[0-9]*" placeholder="15:22" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('off')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                            <input type="text" id="inpSchedOff" inputmode="numeric" pattern="[0-9]*" placeholder="15:22" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('off'); updateEnrouteFromSchedule()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
                         </div>
                         <div>
                             <label class="text-slate-400 block mb-1 text-[10px]">SCHED ON</label>
-                            <input type="text" id="inpSchedOn" inputmode="numeric" pattern="[0-9]*" placeholder="18:01" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('on')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                            <input type="text" id="inpSchedOn" inputmode="numeric" pattern="[0-9]*" placeholder="18:01" onfocus="this.select()" oninput="autoFormatTimeInput(this); syncSchedToEst('on'); updateEnrouteFromSchedule()" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
                         </div>
                         <div>
                             <label class="text-slate-400 block mb-1 text-[10px]">SCHED IN (+14m)</label>
@@ -541,7 +497,7 @@
             schedOff: "15:22",
             schedOn: "18:01",
             schedIn: "18:15",
-            actOut: "15:09",
+            actOut: "15:22",
             estOff: "15:22",
             estOn: "18:01",
             estIn: "18:15",
@@ -620,9 +576,9 @@
         function syncSchedToEst(field) {
             if (field === 'out') {
                 let val = document.getElementById("inpSchedOut").value;
-                document.getElementById("inpActOut").value = val;
+                document.getElementById("inpActOut").value = document.getElementById("inpSchedOff").value || flight.schedOff || val;
                 flight.schedOut = val;
-                flight.actOut = val;
+                flight.actOut = document.getElementById("inpActOut").value;
             }
             if (field === 'off') {
                 let val = document.getElementById("inpSchedOff").value;
@@ -865,24 +821,23 @@
 
         function renderUI() {
             document.getElementById("hdrCallsign").innerText = flight.callsign || "----";
-            document.getElementById("hdrSubinfo").innerText = `AAL${flight.callsign || '----'} • ${flight.actype || ''} • ${flight.tail || ''}`;
-            const flightDate = flight.flightDate || localDateString(new Date());
-            const today = localDateString(new Date());
-            const tomorrow = dateWithOffset(1);
-            const dayLabel = flightDate === today ? "TODAY" : flightDate === tomorrow ? "TOMORROW" : flightDate;
-            document.getElementById("hdrFlightDate").innerText = `FLIGHT DATE: ${dayLabel} · ${flightDate}`;
+            document.getElementById("hdrActype").innerText = flight.actype || "----";
+            document.getElementById("hdrTail").innerText = flight.tail || "----";
             document.getElementById("dispDep").innerText = flight.dep || "---";
-            document.getElementById("dispDepGate").innerText = flight.depGate ? `GATE ${flight.depGate}` : "GATE ---";
-            document.getElementById("dispSchedOut").innerText = flight.schedOut || "----";
-            document.getElementById("dispActOut").innerText = flight.actOut || flight.schedOut || "----";
-            document.getElementById("dispEstOff").innerText = flight.estOff || flight.schedOff || "----";
+            document.getElementById("dispDepGate").innerText = flight.depGate ? `GATE ${flight.depGate}` : "SET GATE";
+            document.getElementById("dispSchedOut").innerText = (flight.schedOut || "----") + (flight.schedOut ? "Z" : "");
+            document.getElementById("dispActOut").innerText = (flight.actOut || flight.schedOff || "----") + ((flight.actOut || flight.schedOff) ? "Z" : "");
+            
             document.getElementById("dispArr").innerText = flight.arr || "---";
-            document.getElementById("dispArrGate").innerText = flight.arrGate ? `GATE ${flight.arrGate}` : "GATE ---";
-            document.getElementById("dispSchedIn").innerText = flight.schedIn || "----";
-            document.getElementById("dispEstOn").innerText = flight.estOn || flight.estIn || "----";
-            document.getElementById("dispEstIn").innerText = flight.estIn || flight.schedIn || "----";
+            document.getElementById("dispArrGate").innerText = flight.arrGate ? `GATE ${flight.arrGate}` : "SET GATE";
+            document.getElementById("dispSchedOn").innerText = (flight.schedOn || "----") + (flight.schedOn ? "Z" : "");
+            document.getElementById("dispEstOn").innerText = (flight.estOn || "----") + (flight.estOn ? "Z" : "");
+
             document.getElementById("dispCruiseAlt").innerText = flight.cruiseAlt || "FL---";
             document.getElementById("dispEnrouteTime").innerText = flight.enrouteTime || "02:28";
+            document.getElementById("dispReleaseFuel").innerText = (flight.releaseFuel || "--") + " K";
+            document.getElementById("dispFlapsThrust").innerText = `${flight.flaps || "--"}/${flight.thrust || "TOGA"}`;
+            document.getElementById("dispMinToFuel").innerText = (flight.minToFuel || "--") + " K";
             renderPhase();
         }
 
@@ -899,40 +854,67 @@
             const now = new Date();
             document.getElementById("dispUtcTime").innerText = now.toISOString().substring(11, 19) + "Z";
             const dateText = flight.flightDate || localDateString(now);
-            const dep = timeOnFlightDate(flight.schedOut, dateText);
-            let arr = timeOnFlightDate(flight.schedIn, dateText);
-            if (dep && arr && arr <= dep) arr.setDate(arr.getDate() + 1);
+            const takeoff = timeOnFlightDate(flight.actOut || flight.schedOff, dateText);
+            let landing = timeOnFlightDate(flight.estOn, dateText);
+            if (takeoff && landing && landing <= takeoff) landing.setDate(landing.getDate() + 1);
             const countdown = document.getElementById("dispCountdown");
-            const progressIds = ["dispProgressPct", "dispProgressPctSpan"];
-            const bar = document.getElementById("dispProgressBar");
             const delta = document.getElementById("dispSchedDelta");
-            if (!dep || !arr || arr <= dep) {
+            if (!takeoff || !landing) {
                 countdown.innerText = "--:--:--";
-                progressIds.forEach(id => document.getElementById(id).innerText = "0%");
-                bar.style.width = "0%";
-                delta.innerText = "SET SCHED TIMES";
+                delta.innerText = "SET T/O AND EST ON";
                 return;
             }
             const fmt = ms => {
                 const secs = Math.max(0, Math.floor(ms / 1000));
-                return [Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60]
-                    .map(n => String(n).padStart(2, "0")).join(":");
+                return [Math.floor(secs / 3600), Math.floor((secs % 3600) / 60), secs % 60].map(n => String(n).padStart(2, "0")).join(":");
             };
-            let pct = 0;
-            if (now < dep) {
-                countdown.innerText = fmt(dep - now);
-                delta.innerText = "TO SCHED OUT";
-            } else if (now >= arr) {
-                countdown.innerText = "00:00:00";
-                pct = 100;
-                delta.innerText = "SCHED INTERVAL ENDED";
-            } else {
-                countdown.innerText = fmt(arr - now);
-                pct = ((now - dep) / (arr - dep)) * 100;
-                delta.innerText = "TIME REMAINING";
+            countdown.innerText = now >= landing ? "00:00:00" : fmt(landing - now);
+            delta.innerText = now >= landing ? "EST ON REACHED" : "TO EST ON";
+        }
+
+        function editGate(which) {
+            const key = which === "dep" ? "depGate" : "arrGate";
+            const label = which === "dep" ? "departure" : "arrival";
+            const value = prompt(`Enter ${label} gate:`, flight[key] || "");
+            if (value === null) return;
+            flight[key] = value.trim().toUpperCase();
+            saveFlightData(); renderUI();
+        }
+
+        function adjustTime(field, delta) {
+            const current = flight[field] || (field === "actOut" ? flight.schedOff : flight.estOn) || "00:00";
+            const next = addMinutesToTimeStr(current, delta);
+            if (!next) return;
+            flight[field] = next;
+            if (field === "actOut") {
+                flight.estOn = addDurationToTime(next, flight.enrouteTime) || flight.estOn;
+                flight.estIn = addMinutesToTimeStr(flight.estOn, 14) || flight.estIn;
             }
-            progressIds.forEach(id => document.getElementById(id).innerText = Math.floor(pct) + "%");
-            bar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+            saveFlightData(); renderUI();
+        }
+
+        function addDurationToTime(start, duration) {
+            if (!start || !duration || !/^\d{1,2}:\d{2}$/.test(start) || !/^\d{1,2}:\d{2}$/.test(duration)) return "";
+            const a = Number(start.slice(0,2))*60 + Number(start.slice(3,5));
+            const d = Number(duration.slice(0,2))*60 + Number(duration.slice(3,5));
+            const total = (a+d) % 1440;
+            return String(Math.floor(total/60)).padStart(2,"0") + ":" + String(total%60).padStart(2,"0");
+        }
+
+        function durationBetween(start, end) {
+            if (!start || !end || !/^\d{1,2}:\d{2}$/.test(start) || !/^\d{1,2}:\d{2}$/.test(end)) return "";
+            let a = Number(start.slice(0,2))*60 + Number(start.slice(3,5));
+            let b = Number(end.slice(0,2))*60 + Number(end.slice(3,5));
+            if (b <= a) b += 1440;
+            const d = b-a;
+            return String(Math.floor(d/60)).padStart(2,"0") + ":" + String(d%60).padStart(2,"0");
+        }
+
+        function updateEnrouteFromSchedule() {
+            const off = document.getElementById("inpSchedOff")?.value || "";
+            const on = document.getElementById("inpSchedOn")?.value || "";
+            const duration = durationBetween(off, on);
+            if (duration) document.getElementById("inpEnrouteTime").value = duration;
         }
 
         const FLIGHTAWARE_WORKER_URL = "https://aa-kneeboard-flight-api.mattaxley.workers.dev";
@@ -1044,6 +1026,8 @@
             };
             const clock = value => {
                 if (!value) return "";
+                const parsed = new Date(value);
+                if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().substring(11, 16);
                 const m = String(value).match(/T(\d{2}:\d{2})/);
                 return m ? m[1] : "";
             };
@@ -1096,7 +1080,7 @@
             setVal("inpArr", flight.arr);
             setVal("inpArrGate", flight.arrGate);
             setVal("inpCruiseAlt", flight.cruiseAlt);
-            setVal("inpEnrouteTime", flight.enrouteTime);
+            setVal("inpEnrouteTime", durationBetween(flight.schedOff, flight.schedOn) || flight.enrouteTime);
             setVal("inpSchedOut", flight.schedOut);
             setVal("inpSchedOff", flight.schedOff);
             setVal("inpSchedOn", flight.schedOn);
@@ -1139,12 +1123,12 @@
             flight.arr = getVal("inpArr");
             flight.arrGate = getVal("inpArrGate");
             flight.cruiseAlt = getVal("inpCruiseAlt");
-            flight.enrouteTime = document.getElementById("inpEnrouteTime")?.value || "02:28";
+            flight.enrouteTime = durationBetween(document.getElementById("inpSchedOff")?.value || "", document.getElementById("inpSchedOn")?.value || "") || document.getElementById("inpEnrouteTime")?.value || "02:28";
             flight.schedOut = document.getElementById("inpSchedOut")?.value || "";
             flight.schedOff = document.getElementById("inpSchedOff")?.value || "";
             flight.schedOn = document.getElementById("inpSchedOn")?.value || "";
             flight.schedIn = document.getElementById("inpSchedIn")?.value || "";
-            flight.actOut = document.getElementById("inpActOut")?.value || "";
+            flight.actOut = document.getElementById("inpActOut")?.value || document.getElementById("inpSchedOff")?.value || "";
             flight.estOff = document.getElementById("inpEstOff")?.value || "";
             flight.estOn = document.getElementById("inpEstOn")?.value || "";
             flight.estIn = document.getElementById("inpEstIn")?.value || "";

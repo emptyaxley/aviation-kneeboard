@@ -354,29 +354,6 @@
                     </div>
                 </div>
 
-                <!-- Estimated / Actual Times -->
-                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
-                    <div class="font-bold text-amber-400 uppercase tracking-wider text-[10px]">4. Estimated / Actual Times</div>
-                    <div class="grid grid-cols-4 gap-2">
-                        <div>
-                            <label class="text-slate-400 block mb-1 text-[10px]">ACT OUT</label>
-                            <input type="text" id="inpActOut" inputmode="numeric" pattern="[0-9]*" placeholder="15:09" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
-                        </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1 text-[10px]">EST OFF</label>
-                            <input type="text" id="inpEstOff" inputmode="numeric" pattern="[0-9]*" placeholder="15:22" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
-                        </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1 text-[10px]">EST ON</label>
-                            <input type="text" id="inpEstOn" inputmode="numeric" pattern="[0-9]*" placeholder="18:01" onfocus="this.select()" oninput="autoFormatTimeInput(this); autoCalcInFromOn('est')" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
-                        </div>
-                        <div>
-                            <label class="text-slate-400 block mb-1 text-[10px]">EST IN (+14m)</label>
-                            <input type="text" id="inpEstIn" inputmode="numeric" pattern="[0-9]*" placeholder="18:15" onfocus="this.select()" oninput="autoFormatTimeInput(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
-                        </div>
-                    </div>
-                </div>
-
                 <!-- FA Briefing / Conditions -->
                 <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2">
                     <div class="font-bold text-cyan-400 uppercase tracking-wider text-[10px]">5. FA Briefing & Flight Conditions</div>
@@ -590,6 +567,7 @@
                 document.getElementById("inpEstOff").value = val;
                 flight.schedOff = val;
                 flight.estOff = val;
+                if (!flight.actOut) flight.actOut = val;
             }
             if (field === 'on') {
                 autoCalcInFromOn('sched');
@@ -836,7 +814,7 @@
             document.getElementById("dispArr").innerText = flight.arr || "---";
             document.getElementById("dispArrGate").innerText = flight.arrGate ? `GATE ${flight.arrGate}` : "SET GATE";
             document.getElementById("dispSchedOn").innerText = (flight.schedOn || "----") + (flight.schedOn ? "Z" : "");
-            document.getElementById("dispEstOn").innerText = (flight.estOn || "----") + (flight.estOn ? "Z" : "");
+            document.getElementById("dispEstOn").innerText = (flight.estOn || flight.schedOn || "----") + ((flight.estOn || flight.schedOn) ? "Z" : "");
 
             document.getElementById("dispCruiseAlt").innerText = flight.cruiseAlt || "FL---";
             document.getElementById("dispEnrouteTime").innerText = `${flight.enrouteTime || "02:28"} / ${flight.distance ? `${flight.distance} NM` : "--- NM"}`;
@@ -859,7 +837,7 @@
             document.getElementById("dispUtcTime").innerText = now.toISOString().substring(11, 19) + "Z";
             const dateText = flight.flightDate || localDateString(now);
             const takeoff = timeOnFlightDate(flight.actOut || flight.schedOff, dateText);
-            let landing = timeOnFlightDate(flight.estOn, dateText);
+            let landing = timeOnFlightDate(flight.estOn || flight.schedOn, dateText);
             if (takeoff && landing && landing <= takeoff) landing.setDate(landing.getDate() + 1);
             const countdown = document.getElementById("dispCountdown");
             const delta = document.getElementById("dispSchedDelta");
@@ -886,7 +864,7 @@
         }
 
         function adjustTime(field, delta) {
-            const current = flight[field] || (field === "actOut" ? flight.schedOff : flight.estOn) || "00:00";
+            const current = flight[field] || (field === "actOut" ? flight.schedOff : flight.schedOn) || "00:00";
             const next = addMinutesToTimeStr(current, delta);
             if (!next) return;
             flight[field] = next;
@@ -1090,10 +1068,6 @@
             setVal("inpSchedOff", flight.schedOff);
             setVal("inpSchedOn", flight.schedOn);
             setVal("inpSchedIn", flight.schedIn);
-            setVal("inpActOut", flight.actOut);
-            setVal("inpEstOff", flight.estOff);
-            setVal("inpEstOn", flight.estOn);
-            setVal("inpEstIn", flight.estIn);
             setVal("inpTurbulence", flight.expectedTurbulence);
             setVal("inpDelays", flight.expectedDelays);
             setVal("inpReleaseFuel", flight.releaseFuel);
@@ -1134,10 +1108,10 @@
             flight.schedOff = document.getElementById("inpSchedOff")?.value || "";
             flight.schedOn = document.getElementById("inpSchedOn")?.value || "";
             flight.schedIn = document.getElementById("inpSchedIn")?.value || "";
-            flight.actOut = document.getElementById("inpActOut")?.value || document.getElementById("inpSchedOff")?.value || "";
-            flight.estOff = document.getElementById("inpEstOff")?.value || "";
-            flight.estOn = document.getElementById("inpEstOn")?.value || "";
-            flight.estIn = document.getElementById("inpEstIn")?.value || "";
+            flight.actOut = flight.actOut || document.getElementById("inpSchedOff")?.value || "";
+            flight.estOn = flight.estOn || document.getElementById("inpSchedOn")?.value || "";
+            flight.estOff = flight.estOff || document.getElementById("inpSchedOff")?.value || "";
+            flight.estIn = flight.estIn || document.getElementById("inpSchedIn")?.value || "";
             flight.expectedTurbulence = getVal("inpTurbulence");
             flight.expectedDelays = getVal("inpDelays");
             flight.releaseFuel = document.getElementById("inpReleaseFuel")?.value || "";

@@ -146,7 +146,7 @@
                 </div>
                 <!-- ENROUTE -->
                 <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-lg border border-slate-800 flex flex-col justify-between text-center">
-                    <div><div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ENROUTE</div><div class="text-base sm:text-xl font-black text-cyan-400 mono-font leading-none" id="dispCruiseAlt">FL350</div><div class="text-[10px] sm:text-xs font-semibold text-slate-300 mono-font mt-1" id="dispEnrouteTime">02:28</div></div>
+                    <div><div class="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">ENROUTE</div><div class="text-base sm:text-xl font-black text-cyan-400 mono-font leading-none" id="dispCruiseAlt">FL350</div><div class="text-[10px] sm:text-xs font-semibold text-slate-300 mono-font mt-1" id="dispEnrouteTime">02:28 / --- NM</div></div>
                     <div class="my-1 py-2 bg-slate-950/80 rounded border border-slate-800/80"><div class="text-[8px] sm:text-[9px] text-slate-400 uppercase font-semibold">REMAINING</div><div class="text-sm sm:text-lg font-black text-cyan-300 mono-font leading-tight" id="dispCountdown">00:00:00</div><div class="text-[10px] font-bold mono-font mt-0.5 text-emerald-400" id="dispSchedDelta">TIME REMAINING</div></div>
                 </div>
                 <!-- ARRIVAL -->
@@ -321,8 +321,12 @@
                             <select id="inpCruiseAlt" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm uppercase cursor-pointer"></select>
                         </div>
                         <div>
-                            <label class="text-slate-400 block mb-1">En Route Time (00:00)</label>
+                            <label class="text-slate-400 block mb-1">En Route Time (HH:MM)</label>
                             <input type="text" id="inpEnrouteTime" inputmode="numeric" pattern="[0-9]*" placeholder="02:28" onfocus="this.select()" oninput="autoFormatEnrouteTime(this)" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-slate-400 block mb-1">Distance (NM)</label>
+                            <input type="number" id="inpDistance" inputmode="numeric" min="0" step="1" placeholder="1200" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white font-mono text-sm">
                         </div>
                     </div>
                 </div>
@@ -493,6 +497,7 @@
             arrGate: "B14",
             cruiseAlt: "FL350",
             enrouteTime: "02:28",
+            distance: "",
             schedOut: "15:09",
             schedOff: "15:22",
             schedOn: "18:01",
@@ -834,7 +839,7 @@
             document.getElementById("dispEstOn").innerText = (flight.estOn || "----") + (flight.estOn ? "Z" : "");
 
             document.getElementById("dispCruiseAlt").innerText = flight.cruiseAlt || "FL---";
-            document.getElementById("dispEnrouteTime").innerText = flight.enrouteTime || "02:28";
+            document.getElementById("dispEnrouteTime").innerText = `${flight.enrouteTime || "02:28"} / ${flight.distance ? `${flight.distance} NM` : "--- NM"}`;
             document.getElementById("dispReleaseFuel").innerText = (flight.releaseFuel || "--") + " K";
             document.getElementById("dispFlapsThrust").innerText = `${flight.flaps || "--"}/${flight.thrust || "TOGA"}`;
             document.getElementById("dispMinToFuel").innerText = (flight.minToFuel || "--") + " K";
@@ -845,9 +850,8 @@
             if (!timeText || !/^\d{1,2}:\d{2}$/.test(timeText)) return null;
             const parts = timeText.split(":").map(Number);
             if (parts[0] > 23 || parts[1] > 59) return null;
-            const d = new Date((dateText || localDateString(new Date())) + "T12:00:00");
-            d.setHours(parts[0], parts[1], 0, 0);
-            return d;
+            // Flight times are Zulu. Build the timestamp in UTC, not device-local time.
+            return new Date(`${dateText || localDateString(new Date())}T${String(parts[0]).padStart(2, "0")}:${String(parts[1]).padStart(2, "0")}:00Z`);
         }
 
         function updateCalculatedTimers() {
@@ -1081,6 +1085,7 @@
             setVal("inpArrGate", flight.arrGate);
             setVal("inpCruiseAlt", flight.cruiseAlt);
             setVal("inpEnrouteTime", durationBetween(flight.schedOff, flight.schedOn) || flight.enrouteTime);
+            setVal("inpDistance", flight.distance);
             setVal("inpSchedOut", flight.schedOut);
             setVal("inpSchedOff", flight.schedOff);
             setVal("inpSchedOn", flight.schedOn);
@@ -1124,6 +1129,7 @@
             flight.arrGate = getVal("inpArrGate");
             flight.cruiseAlt = getVal("inpCruiseAlt");
             flight.enrouteTime = durationBetween(document.getElementById("inpSchedOff")?.value || "", document.getElementById("inpSchedOn")?.value || "") || document.getElementById("inpEnrouteTime")?.value || "02:28";
+            flight.distance = document.getElementById("inpDistance")?.value || "";
             flight.schedOut = document.getElementById("inpSchedOut")?.value || "";
             flight.schedOff = document.getElementById("inpSchedOff")?.value || "";
             flight.schedOn = document.getElementById("inpSchedOn")?.value || "";

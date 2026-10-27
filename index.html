@@ -556,35 +556,33 @@
         }
 
         function syncSchedToEst(field) {
+            // Setup now contains scheduled times only. Keep dashboard actual/estimated
+            // values synchronized to schedule until the pilot has manually adjusted them.
             if (field === 'out') {
-                let val = document.getElementById("inpSchedOut").value;
-                document.getElementById("inpActOut").value = document.getElementById("inpSchedOff").value || flight.schedOff || val;
-                flight.schedOut = val;
-                flight.actOut = document.getElementById("inpActOut").value;
+                flight.schedOut = document.getElementById("inpSchedOut")?.value || "";
             }
             if (field === 'off') {
-                let val = document.getElementById("inpSchedOff").value;
-                document.getElementById("inpEstOff").value = val;
+                const val = document.getElementById("inpSchedOff")?.value || "";
+                const previousScheduledOff = flight.schedOff || "";
                 flight.schedOff = val;
-                flight.estOff = val;
-                if (!flight.actOut) flight.actOut = val;
+                if (!flight.actOut || flight.actOut === previousScheduledOff) flight.actOut = val;
+                if (!flight.estOff || flight.estOff === previousScheduledOff) flight.estOff = val;
             }
             if (field === 'on') {
                 autoCalcInFromOn('sched');
-                let valOn = document.getElementById("inpSchedOn").value;
-                let valIn = document.getElementById("inpSchedIn").value;
-                document.getElementById("inpEstOn").value = valOn;
-                document.getElementById("inpEstIn").value = valIn;
+                const valOn = document.getElementById("inpSchedOn")?.value || "";
+                const valIn = document.getElementById("inpSchedIn")?.value || "";
+                const previousScheduledOn = flight.schedOn || "";
                 flight.schedOn = valOn;
-                flight.estOn = valOn;
                 flight.schedIn = valIn;
-                flight.estIn = valIn;
+                if (!flight.estOn || flight.estOn === previousScheduledOn) flight.estOn = valOn;
+                if (!flight.estIn || flight.estIn === flight.schedIn || !flight.estIn) flight.estIn = valIn;
+                updateEnrouteFromSchedule();
             }
             if (field === 'in') {
-                let val = document.getElementById("inpSchedIn").value;
-                document.getElementById("inpEstIn").value = val;
+                const val = document.getElementById("inpSchedIn")?.value || "";
                 flight.schedIn = val;
-                flight.estIn = val;
+                if (!flight.estIn) flight.estIn = val;
             }
             saveFlightData();
             renderUI();
@@ -1104,14 +1102,23 @@
             flight.cruiseAlt = getVal("inpCruiseAlt");
             flight.enrouteTime = durationBetween(document.getElementById("inpSchedOff")?.value || "", document.getElementById("inpSchedOn")?.value || "") || document.getElementById("inpEnrouteTime")?.value || "02:28";
             flight.distance = document.getElementById("inpDistance")?.value || "";
-            flight.schedOut = document.getElementById("inpSchedOut")?.value || "";
-            flight.schedOff = document.getElementById("inpSchedOff")?.value || "";
-            flight.schedOn = document.getElementById("inpSchedOn")?.value || "";
-            flight.schedIn = document.getElementById("inpSchedIn")?.value || "";
-            flight.actOut = flight.actOut || document.getElementById("inpSchedOff")?.value || "";
-            flight.estOn = flight.estOn || document.getElementById("inpSchedOn")?.value || "";
-            flight.estOff = flight.estOff || document.getElementById("inpSchedOff")?.value || "";
-            flight.estIn = flight.estIn || document.getElementById("inpSchedIn")?.value || "";
+            const previousSchedOff = flight.schedOff || "";
+            const previousSchedOn = flight.schedOn || "";
+            const previousSchedIn = flight.schedIn || "";
+            const newSchedOut = document.getElementById("inpSchedOut")?.value || "";
+            const newSchedOff = document.getElementById("inpSchedOff")?.value || "";
+            const newSchedOn = document.getElementById("inpSchedOn")?.value || "";
+            const newSchedIn = document.getElementById("inpSchedIn")?.value || "";
+            flight.schedOut = newSchedOut;
+            flight.schedOff = newSchedOff;
+            flight.schedOn = newSchedOn;
+            flight.schedIn = newSchedIn;
+            // Seed dashboard times from scheduled times. Preserve manual dashboard
+            // adjustments unless the corresponding scheduled time was changed.
+            if (!flight.actOut || flight.actOut === previousSchedOff || previousSchedOff !== newSchedOff) flight.actOut = newSchedOff;
+            if (!flight.estOn || flight.estOn === previousSchedOn || previousSchedOn !== newSchedOn) flight.estOn = newSchedOn;
+            if (!flight.estOff || flight.estOff === previousSchedOff || previousSchedOff !== newSchedOff) flight.estOff = newSchedOff;
+            if (!flight.estIn || flight.estIn === previousSchedIn || previousSchedIn !== newSchedIn) flight.estIn = newSchedIn;
             flight.expectedTurbulence = getVal("inpTurbulence");
             flight.expectedDelays = getVal("inpDelays");
             flight.releaseFuel = document.getElementById("inpReleaseFuel")?.value || "";

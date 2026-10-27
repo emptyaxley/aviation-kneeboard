@@ -141,7 +141,7 @@
                     <button type="button" class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispDepGate" onclick="editGate('dep')">GATE D42</button>
                     <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-1">
                         <div class="flex justify-between text-slate-400"><span>SCHED OUT Z:</span><span class="text-white font-semibold" id="dispSchedOut">15:09Z</span></div>
-                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">ACTUAL T/O Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('actOut',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute earlier">−</button><span class="text-cyan-300 font-bold min-w-[42px]" id="dispActOut">15:22Z</span><button onclick="adjustTime('actOut',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute later">+</button></div></div>
+                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">ACTUAL T/O Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('actOut',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute earlier">−</button><button type="button" class="text-cyan-300 font-bold min-w-[42px] underline decoration-dotted underline-offset-2" id="dispActOut" onclick="editDashboardTime('actOut')" aria-label="Tap to edit actual takeoff time">15:22Z</button><button onclick="adjustTime('actOut',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Actual takeoff one minute later">+</button></div></div>
                     </div>
                 </div>
                 <!-- ENROUTE -->
@@ -156,7 +156,7 @@
                     <button type="button" class="text-[10px] sm:text-xs font-bold text-amber-400 mono-font mt-1 bg-amber-950/40 py-0.5 px-1 rounded border border-amber-500/30 truncate" id="dispArrGate" onclick="editGate('arr')">GATE B14</button>
                     <div class="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] sm:text-[11px] mono-font space-y-1">
                         <div class="flex justify-between text-slate-400"><span>SCHED ON Z:</span><span class="text-white font-semibold" id="dispSchedOn">18:01Z</span></div>
-                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">EST ON Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('estOn',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute earlier">−</button><span class="text-cyan-300 font-bold min-w-[42px]" id="dispEstOn">18:01Z</span><button onclick="adjustTime('estOn',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute later">+</button></div></div>
+                        <div class="flex items-center justify-between gap-1"><span class="text-slate-400 text-left">EST ON Z:</span><div class="flex items-center gap-1"><button onclick="adjustTime('estOn',-1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute earlier">−</button><button type="button" class="text-cyan-300 font-bold min-w-[42px] underline decoration-dotted underline-offset-2" id="dispEstOn" onclick="editDashboardTime('estOn')" aria-label="Tap to edit estimated on time">18:01Z</button><button onclick="adjustTime('estOn',1)" class="rounded bg-slate-800 border border-slate-700 px-1.5 text-cyan-300 font-bold" aria-label="Estimated on one minute later">+</button></div></div>
                     </div>
                 </div>
             </div>
@@ -565,8 +565,8 @@
                 const val = document.getElementById("inpSchedOff")?.value || "";
                 const previousScheduledOff = flight.schedOff || "";
                 flight.schedOff = val;
-                if (!flight.actOut || flight.actOut === previousScheduledOff) flight.actOut = val;
-                if (!flight.estOff || flight.estOff === previousScheduledOff) flight.estOff = val;
+                flight.actOut = val;
+                flight.estOff = val;
             }
             if (field === 'on') {
                 autoCalcInFromOn('sched');
@@ -575,7 +575,7 @@
                 const previousScheduledOn = flight.schedOn || "";
                 flight.schedOn = valOn;
                 flight.schedIn = valIn;
-                if (!flight.estOn || flight.estOn === previousScheduledOn) flight.estOn = valOn;
+                flight.estOn = valOn;
                 if (!flight.estIn || flight.estIn === flight.schedIn || !flight.estIn) flight.estIn = valIn;
                 updateEnrouteFromSchedule();
             }
@@ -861,6 +861,27 @@
             saveFlightData(); renderUI();
         }
 
+        function editDashboardTime(field) {
+            const isTakeoff = field === "actOut";
+            const label = isTakeoff ? "ACTUAL T/O" : "EST ON";
+            const current = flight[field] || (isTakeoff ? flight.schedOff : flight.schedOn) || "";
+            const entered = prompt(`${label} (Zulu) — enter time as HH:MM`, current);
+            if (entered === null) return;
+            const value = entered.trim();
+            if (!/^([01]?\d|2[0-3]):[0-5]\d$/.test(value)) {
+                alert("Enter a valid Zulu time in HH:MM format, for example 13:09.");
+                return;
+            }
+            const normalized = value.length === 4 ? "0" + value : value;
+            flight[field] = normalized;
+            if (isTakeoff) {
+                flight.estOn = addDurationToTime(normalized, flight.enrouteTime) || flight.estOn;
+                flight.estIn = addMinutesToTimeStr(flight.estOn, 14) || flight.estIn;
+            }
+            saveFlightData();
+            renderUI();
+        }
+
         function adjustTime(field, delta) {
             const current = flight[field] || (field === "actOut" ? flight.schedOff : flight.schedOn) || "00:00";
             const next = addMinutesToTimeStr(current, delta);
@@ -1113,12 +1134,12 @@
             flight.schedOff = newSchedOff;
             flight.schedOn = newSchedOn;
             flight.schedIn = newSchedIn;
-            // Seed dashboard times from scheduled times. Preserve manual dashboard
-            // adjustments unless the corresponding scheduled time was changed.
-            if (!flight.actOut || flight.actOut === previousSchedOff || previousSchedOff !== newSchedOff) flight.actOut = newSchedOff;
-            if (!flight.estOn || flight.estOn === previousSchedOn || previousSchedOn !== newSchedOn) flight.estOn = newSchedOn;
-            if (!flight.estOff || flight.estOff === previousSchedOff || previousSchedOff !== newSchedOff) flight.estOff = newSchedOff;
-            if (!flight.estIn || flight.estIn === previousSchedIn || previousSchedIn !== newSchedIn) flight.estIn = newSchedIn;
+            // Scheduled times are the source of truth when Setup is saved.
+            // The pilot can then tap ACTUAL T/O or EST ON on the dashboard to adjust.
+            flight.actOut = newSchedOff;
+            flight.estOn = newSchedOn;
+            flight.estOff = newSchedOff;
+            flight.estIn = newSchedIn;
             flight.expectedTurbulence = getVal("inpTurbulence");
             flight.expectedDelays = getVal("inpDelays");
             flight.releaseFuel = document.getElementById("inpReleaseFuel")?.value || "";
